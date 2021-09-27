@@ -20,15 +20,118 @@ MuseScore {
       onRun: {
             processScore()
       
-            //Qt.quit()
       }
+      function showObject(oObject) {
+		//	PURPOSE: Lists all key -> value pairs to the console.
+		//	NOTE: To reduce clutter I am filtering out any 
+		//'undefined' properties. (The MuseScore 'element' object
+		//is very flat - it will show many, many properties for any
+		//given element type; but for any given element many, if not 
+		//most of these properties will return 'undefined' as they 
+		//are not all valid for all element types. If you want to see 
+		//this comment out the filter.)
+		
+		if (Object.keys(oObject).length >0) {
+			Object.keys(oObject)
+				.filter(function(key) {
+					return oObject[key] != null;
+				})
+				.sort()
+				.forEach(function eachKey(key) {
+					console.log("---- ---- ", key, " : <", oObject[key], ">");
+				});
+		}
+	}
 
+      function processHelper() {
+            this.parts = []
+            this.newPart = function(partname) {
+                  this.parts.push({
+                        name: partname,
+                        data: []
+                  })
+            },
+            this.newNote = function(nind, tpitch, dur, letter, number, dashes) {
+                  this.parts[this.parts.length-1].data.push({
+                        nind: nind,
+                        type: "note",
+                        pitch: tpitch,
+                        duration: dur,
+                        letter: letter,
+                        number: number,
+                        dashes: dashes
+                  })
+            },
+            this.newRest = function(nind,dur) {
+                  this.parts[this.parts.length-1].data.push({
+                        nind: nind,
+                        type: "rest",
+                        duration: dur
+                  })
+            },
+            this.lastLayoutInfoNind = -1,
+            this.newLayoutBreak = function(nind) {
+                  if (nind<=this.lastLayoutInfoNind) {
+                        return
+                  }
+                  this.lastLayoutInfoNind = nind
+                  this.parts[this.parts.length-1].data.push({
+                        nind: nind,
+                        type: "layout_break"
+                  })
+            },
+            this.getOutput = function() {
+                  outputLetters = ""
+                  outputNumbers = ""
+                  for (let i=0; i<this.parts.length; i++) {
+                        let p = this.parts[i]
+                        p.data.sort(function(a,b) {
+                              var dif = a.nind-b.nind
+                              if (dif!=0) {
+                                    return dif
+                              } 
+                              if (b.type=="layout_break") {
+                                    return 1
+                              }
+                              return -1
+                        })
+                        if (i>0) {
+                              outputLetters += "\n\n"
+                              outputNumbers += "\n\n"
+                        }
+                        outputLetters += p.name+"\n"
+                        outputNumbers += p.name+"\n"
+                        for (let j=0; j<p.data.length; j++) {
+                              switch(p.data[j].type) {
+                                    case "note":
+                                          outputLetters += p.data[j].letter + p.data[j].dashes + " "
+                                          outputNumbers += p.data[j].number + p.data[j].dashes + " "
+                                          break;
+                                    case "layout_break":
+                                          if (layoutBreakCheckBox.checked) {
+                                                outputLetters += "\n"
+                                                outputNumbers += "\n"
+                                          }
+                                          break;
+                                    case "rest": 
+                                          outputLetters += "  "
+                                          outputNumbers += "  "
+                                          break;
+                                    default:
+                                          break;
+                              }
+                        }
+                  }
+            }
+      }
       function processScore() {
 
             var cur = curScore.newCursor()
             cur.staffIdx = 0
             cur.voice = 0
             cur.rewind(0)
+
+            var pH = new processHelper()
             
             console.log("---------")
             
@@ -37,17 +140,16 @@ MuseScore {
             console.log(`Score "${score.title}" ("${score.scoreName}") with ${score.nstaves} staves, ${score.ntracks} tracks, ${score.nmeasures} measures`)
             console.log("---------")
 
-            outputLetters = ""
-            outputNumbers = ""
             
             var  i = 0
             while (cur.segment) {
             
                   var nind = cur.segment.tick/division
-                  console.log(`Segment ${i}`)
+                  console.log(`Segment ${i} at ${cur.segment.tick}`)
                   //console.log(`  Tick ${+cur.segment.tick}`)
                   console.log(`  Ind ${nind}`)
                   //console.log(`  KeySig ${cur.keySignature}`)
+                  //console.log(`  staff ${cur.staffIdx}  voice ${cur.voice}  track ${cur.track}`)
                   
                   for (let j=0; j<cur.segment.annotations.length; j++) {
                         var an = cur.segment.annotations[j]
@@ -59,46 +161,67 @@ MuseScore {
                               console.log(`  system text: ${an.text}`)
                               outputLetters += `\n\n${an.text}:\n`
                               outputNumbers += `\n\n${an.text}:\n`
+                              pH.newPart(an.text)
                         } else {
                               console.log(`  ======> Annotation with type ${an.type} ${an.userName()}`)
                         }
                   }
+
             
                   if (cur.element) {
                         if (cur.element.type==Element.CHORD) {
+                              /* TODO: handle multiple notes
                               for (let j=0; j<cur.element.notes.length; j++) {
                                     var n = cur.element.notes[j]
                                     var pitch = n.pitch
                                     var tpitch = pitch + (n.tpc2-n.tpc1)
-                                    console.log("  Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
+                                    //console.log("  Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
                               }
-                              if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="auto") {
-                                    if (cur.keySignature<0) {
-                                          outputLetters += lettersFlat(tpitch)
-                                    } else {
-                                          outputLetters += lettersSharp(tpitch)
-                                    }
-                              } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="sharp") {
-                                    outputLetters += lettersSharp(tpitch)
-                              } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="flat") {
-                                    outputLetters += lettersFlat(tpitch)
-                              }
-                              outputLetters += dashes(tpitch)+" "
-                              outputNumbers += numbers(tpitch)
-                              outputNumbers += dashes(tpitch)+" "
-                        } else if (cur.element.type==Element.LAYOUT_BREAK) {
-                              console.log("  layout break")
-                        } else if (cur.element.type==Element.NOTE) {
-                              console.log("  note")
+                              */
+                              var n = cur.element.notes[0]
+                              var pitch = n.pitch
+                              var tpitch = pitch + (n.tpc2-n.tpc1)
+                              pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch), dashes(tpitch))
+                              console.log("    Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
+                              
+                              //outputLetters += letters(tpitch, cur)
+                              //outputLetters += dashes(tpitch)+" "
+                              //outputNumbers += numbers(tpitch)
+                              //outputNumbers += dashes(tpitch)+" "
                         } else if (cur.element.type==Element.REST) {
                               var duration = cur.element.actualDuration
+                              pH.newRest(nind,duration)
                               // cur.element has numerator,denuminator (of whole note), ticks and str
-                              console.log("  Rest\t"+duration.str)
+                              console.log("    Rest\t"+duration.str)
                         } else {
                               console.log("  ======> Other element of type "+cur.element.userName()+")")
                         }
                   } else {
                         console.log("No element")
+                  }
+
+                  var mes = cur.measure.elements
+                  var m = cur.measure
+                  for (let j=0; j<mes.length; j++) {
+                        let me = mes[j]
+                        if (me.type==Element.LAYOUT_BREAK) {
+                              console.log(`    position ${me.position.str}  timesig ${me.timesigActual.str} lastSegment ${m.lastSegment.name} ${m.lastSegment.segmentType} ${m.lastSegment.tick} ${cur.segment.tick}`)
+                              pH.newLayoutBreak(m.lastSegment.tick/division)
+                              if (!m.lastSegment) {
+                                    console.log(`    no lastSegment`)
+                              } else if (m.lastSegment.is(cur.segment)) {
+                                    console.log(`    layout break`)
+                              } else {
+                                    console.log(`    too early for layout break`)
+                                    var cs = m.firstSegment
+                                    while (cs!=null) {
+                                          console.log(cs.name, cs.type, cs.segmentType, cs.tick)
+                                          cs = cs.nextInMeasure
+                                    }
+                              }
+                        } else {
+                              console.log(`    =====> Other measure element ${m.name}`)
+                        }
                   }
                   
             
@@ -109,6 +232,23 @@ MuseScore {
                         //break
                    }
             }
+
+            console.log("collected")
+            pH.getOutput()
+            console.log(outputLetters)
+            /*
+            for (let i=0; i<pH.parts.length; i++) {
+                  let p = pH.parts[i]
+                  console.log(`part "${p.name}"`)
+                  for (let j=0; j<p.data.length; j++) {
+                        for (let k in p.data[j]) {
+                              console.log(`${k}: ${p.data[j][k]}`)
+                        }
+                        //showObject(p.data[j])
+                  }
+            }
+            */
+
       }
 
       Label {
@@ -156,9 +296,13 @@ MuseScore {
             }
 
             CheckBox {
-                  id: exampleCheckBox
+                  id: layoutBreakCheckBox
                   checked: true
-                  text: "CheckBox"
+                  text: "Layout break creates newline"
+                  onCheckedChanged: function () {
+                        console.log("check changed")
+                        processScore()
+                  }
             }
       }
 
@@ -194,7 +338,7 @@ MuseScore {
       Button {
             id : buttonCancel
             text: qsTr("Cancel")
-            anchors.top: settingsColumn
+            //anchors.top: settingsColumn.bottom
             anchors.bottom: window.bottom
             anchors.right: window.right
             anchors.rightMargin: 10
@@ -282,6 +426,20 @@ MuseScore {
                   case 83: return "2"
                   case 84: return "L"
                   default: ""
+            }
+      }
+
+      function letters(tpitch, cur) {
+            if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="auto") {
+                  if (cur.keySignature<0) {
+                        return lettersFlat(tpitch)
+                  } else {
+                        return lettersSharp(tpitch)
+                  }
+            } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="sharp") {
+                  return lettersSharp(tpitch)
+            } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="flat") {
+                  return lettersFlat(tpitch)
             }
       }
       
@@ -382,4 +540,5 @@ MuseScore {
 /*
 TODO:
 - use concert pitch or make it an option
+- connected notes
 */
