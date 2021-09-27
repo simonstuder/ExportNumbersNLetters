@@ -14,10 +14,17 @@ MuseScore {
       width: 800
       height: 500
 
-      property string output
+      property string outputNumbers
+      property string outputLetters
 
       onRun: {
+            processScore()
       
+            //Qt.quit()
+      }
+
+      function processScore() {
+
             var cur = curScore.newCursor()
             cur.staffIdx = 0
             cur.voice = 0
@@ -30,24 +37,27 @@ MuseScore {
             console.log(`Score "${score.title}" ("${score.scoreName}") with ${score.nstaves} staves, ${score.ntracks} tracks, ${score.nmeasures} measures`)
             console.log("---------")
 
-            output = ""
+            outputLetters = ""
+            outputNumbers = ""
             
            var  i = 0
             while (cur.segment) {
             
                   var nind = cur.segment.tick/division
                   console.log(`Segment ${i}`)
-                  console.log(`  Tick ${+cur.segment.tick}`)
+                  //console.log(`  Tick ${+cur.segment.tick}`)
                   console.log(`  Ind ${nind}`)
-                  // annotaions
+                  //console.log(`  KeySig ${cur.keySignature}`)
+                  
                   for (let j=0; j<cur.segment.annotations.length; j++) {
                         var an = cur.segment.annotations[j]
                         if (an.type==41) {
                               console.log(`  tempo annotation`)
                         } else if (an.type==42) {
-                              console.log(`  staff text`)
+                              console.log(`  staff text`) // TODO: do the same as system text?
                         } else if (an.type==43) {
                               console.log(`  system text: ${an.text}`)
+                              outputLetters += `\n\n${an.text}:\n`
                         } else {
                               console.log(`  ======> Annotation with type ${an.type} ${an.userName()}`)
                         }
@@ -57,10 +67,22 @@ MuseScore {
                         if (cur.element.type==Element.CHORD) {
                               for (let j=0; j<cur.element.notes.length; j++) {
                                     var n = cur.element.notes[j]
-                                    console.log("  Note  "+n.pitch + "\t"+ lettersFis(n.pitch)+dashes(n.pitch)+"    \t"+ lettersB(n.pitch)+dashes(n.pitch)+"\t"+ numbers(n.pitch)+dashes(n.pitch)+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2)
+                                    var pitch = n.pitch
+                                    var tpitch = pitch + (n.tpc2-n.tpc1)
+                                    console.log("  Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
                               }
-                              output += lettersFis(n.pitch)+dashes(n.pitch)+" "
-                              previewText.text = output
+                              if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="auto") {
+                                    if (cur.keySignature<0) {
+                                          outputLetters += lettersFlat(tpitch)
+                                    } else {
+                                          outputLetters += lettersSharp(tpitch)
+                                    }
+                              } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="sharp") {
+                                    outputLetters += lettersSharp(tpitch)
+                              } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="flat") {
+                                    outputLetters += lettersFlat(tpitch)
+                              }
+                              outputLetters += dashes(tpitch)+" "
                         } else if (cur.element.type==Element.LAYOUT_BREAK) {
                               console.log("  layout break")
                         } else if (cur.element.type==Element.NOTE) {
@@ -81,11 +103,9 @@ MuseScore {
                   
                   i = i+1
                   if (i>60) {
-                        break
+                        //break
                    }
             }
-      
-            //Qt.quit()
       }
 
       function openFile(fileUrl) {
@@ -121,24 +141,35 @@ MuseScore {
             anchors.rightMargin: 10
             spacing: 10
 
-            ComboBox {
-                  id: sharpOrFlatSelectionBox
-                  currentIndex: 1
-                  model: ListModel {
-                        id: sharpOrFlatSelection
-                        ListElement { text: "auto" }
-                        ListElement { text: qsTr("sharp") }
-                        ListElement { text: qsTr("flat") }
+            Row {
+                  spacing: 2
+
+                  Text {
+                        id: sharpOrFlatLabel
+                        text: "Use sharp or flats"
+                        anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
                   }
-                  width: 200
-                  onCurrentIndexChanged: console.debug(sharpOrFlatSelection.get(currentIndex).text)
+                  ComboBox {
+                        id: sharpOrFlatSelectionBox
+                        currentIndex: 0
+                        model: ListModel {
+                              id: sharpOrFlatSelection
+                              ListElement { text: "auto"; value: "auto" }
+                              ListElement { text: qsTr("sharp"); value: "sharp" }
+                              ListElement { text: qsTr("flat"); value: "flat" }
+                        }
+                        width: 70
+                        onCurrentIndexChanged: function () {
+                              processScore()
+                              //console.debug(sharpOrFlatSelection.get(currentIndex).text)
+                        }
+                  }
             }
 
             CheckBox {
                   id: exampleCheckBox
                   checked: true
                   text: "CheckBox"
-                  width: contentWidth
             }
       }
 
@@ -153,7 +184,7 @@ MuseScore {
             height:400
             wrapMode: TextEdit.WrapAnywhere
             textFormat: TextEdit.PlainText
-            text: output
+            text: outputLetters
       }
 
 
@@ -179,8 +210,7 @@ MuseScore {
             onAccepted: {
                   var filename = fileDialog.fileUrl
                   if(filename){
-                        saveFile(filename, output)
-                        console.log(output)
+                        saveFile(filename, outputLetters)
                   }
             }
             //Component.onCompleted: visible = true
@@ -226,7 +256,7 @@ MuseScore {
             }
       }
       
-      function lettersFis(pitch) {
+      function lettersSharp(pitch) {
             switch (pitch) {
                   case 54: return "Fis"
                   case 55: return "G"
@@ -265,7 +295,7 @@ MuseScore {
       
       
       
-      function lettersB(pitch) {
+      function lettersFlat(pitch) {
             switch (pitch) {
                   case 54: return "Ges"
                   case 55: return "G"
