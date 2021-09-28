@@ -51,7 +51,15 @@ MuseScore {
                         data: []
                   })
             },
+            this.checkPart = function() {
+                  if (this.parts.length==0) {
+                        this.parts.push({
+                              data: []
+                        })
+                  }
+            }
             this.newNote = function(nind, tpitch, dur, letter, number, dashes) {
+                  this.checkPart()
                   this.parts[this.parts.length-1].data.push({
                         nind: nind,
                         type: "note",
@@ -63,6 +71,7 @@ MuseScore {
                   })
             },
             this.newRest = function(nind,dur) {
+                  this.checkPart()
                   this.parts[this.parts.length-1].data.push({
                         nind: nind,
                         type: "rest",
@@ -75,6 +84,7 @@ MuseScore {
                         return
                   }
                   this.lastLayoutInfoNind = nind
+                  this.checkPart()
                   this.parts[this.parts.length-1].data.push({
                         nind: nind,
                         type: "layout_break"
@@ -99,8 +109,10 @@ MuseScore {
                               outputLetters += "\n\n"
                               outputNumbers += "\n\n"
                         }
-                        outputLetters += p.name+"\n"
-                        outputNumbers += p.name+"\n"
+                        if ("name" in p) {
+                              outputLetters += p.name+"\n"
+                              outputNumbers += p.name+"\n"
+                        }
                         for (let j=0; j<p.data.length; j++) {
                               switch(p.data[j].type) {
                                     case "note":
@@ -181,13 +193,18 @@ MuseScore {
                               var n = cur.element.notes[0]
                               var pitch = n.pitch
                               var tpitch = pitch + (n.tpc2-n.tpc1)
-                              pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch), dashes(tpitch))
-                              console.log("    Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
-                              
-                              //outputLetters += letters(tpitch, cur)
-                              //outputLetters += dashes(tpitch)+" "
-                              //outputNumbers += numbers(tpitch)
-                              //outputNumbers += dashes(tpitch)+" "
+                              if (n.tieBack!==null && n.tieBack.startNote.pitch==n.pitch) {
+                                    console.log(`    Tie back ${n.tieBack.startNote.pitch}`)
+                              } else {
+                                    pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch), dashes(tpitch))
+                                    console.log("    Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
+                                    
+                                    
+                                    //outputLetters += letters(tpitch, cur)
+                                    //outputLetters += dashes(tpitch)+" "
+                                    //outputNumbers += numbers(tpitch)
+                                    //outputNumbers += dashes(tpitch)+" "
+                              }
                         } else if (cur.element.type==Element.REST) {
                               var duration = cur.element.actualDuration
                               pH.newRest(nind,duration)
@@ -230,7 +247,7 @@ MuseScore {
                   i = i+1
                   if (i>60) {
                         //break
-                   }
+                  }
             }
 
             console.log("collected")
@@ -540,5 +557,5 @@ MuseScore {
 /*
 TODO:
 - use concert pitch or make it an option
-- connected notes
+- special ties maybe with more than two notes on same pitch
 */
