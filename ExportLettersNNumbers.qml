@@ -159,6 +159,16 @@ MuseScore {
       }
 
       function processStaffVoice(staff,voice) {
+
+            var instrumentPitchOffset = 0
+            var sss = getStaffFromInd(staff)
+            if(sss.part.instruments[0].instrumentId.indexOf("brass.trombone")==0) {
+                  instrumentPitchOffset = 12
+            } else if(sss.part.instruments[0].instrumentId.indexOf("brass.sousaphone")==0) {
+                  instrumentPitchOffset = 24
+            }
+            //console.log("instrumentPitchOffset",instrumentPitchOffset)
+
             var cur = curScore.newCursor()
             cur.staffIdx = staff
             cur.voice = voice 
@@ -206,13 +216,13 @@ MuseScore {
                               /* TODO: handle multiple notes
                               for (let j=0; j<cur.element.notes.length; j++) {
                                     var n = cur.element.notes[j]
-                                    var pitch = n.pitch
+                                    var pitch = n.pitch + instrumentPitchOffset
                                     var tpitch = pitch + (n.tpc2-n.tpc1)
                                     //console.log("  Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
                               }
                               */
                               var n = cur.element.notes[0]
-                              var pitch = n.pitch
+                              var pitch = n.pitch + instrumentPitchOffset
                               var tpitch = pitch + (n.tpc2-n.tpc1)
                               if (n.tieBack!==null && n.tieBack.startNote.pitch==n.pitch) {
                                     //console.log(`    Tie back ${n.tieBack.startNote.pitch}`)
@@ -318,8 +328,12 @@ MuseScore {
       function processPreview() {
             var selectedStaffs = getSelectedStaffsOrAllInd()
             console.log("selectedStaffs")
-            for (let ss of selectedStaffs) {
-                  console.log(ss)
+            for (let staff of selectedStaffs) {
+                  console.log(staff)
+                  var sss = getStaffFromInd(staff)
+                  //console.log(sss.part, sss.part.instruments.length)
+                  //showObject(sss.part)
+                  //showObject(sss.part.instruments[0])
             }
 
             processStaffVoice(selectedStaffs[0], 0)
@@ -663,6 +677,6 @@ MuseScore {
 TODO:
 - use concert pitch or make it an option
 - special ties maybe with more than two notes on same pitch
-- handle trombone and sousaphone (other instruments)
+- handle other instruments
 - make mapping customizable
 */
