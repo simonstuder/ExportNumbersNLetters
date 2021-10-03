@@ -357,7 +357,7 @@ MuseScore {
       Label {
             id: textLabel
             wrapMode: Text.WordWrap
-            text: qsTr("Preview of current settings to the right")
+            text: qsTr("Preview of current settings on the right")
             font.pointSize:12
             anchors.left: window.left
             anchors.top: window.top
@@ -378,7 +378,7 @@ MuseScore {
 
                   Text {
                         id: sharpOrFlatLabel
-                        text: "Use sharp or flats"
+                        text: qsTr("Use sharps or flats")
                         anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
                   }
                   ComboBox {
@@ -387,8 +387,8 @@ MuseScore {
                         model: ListModel {
                               id: sharpOrFlatSelection
                               ListElement { text: "auto"; value: "auto" }
-                              ListElement { text: qsTr("sharp"); value: "sharp" }
-                              ListElement { text: qsTr("flat"); value: "flat" }
+                              ListElement { text: qsTr("sharps"); value: "sharp" }
+                              ListElement { text: qsTr("flats"); value: "flat" }
                         }
                         width: 70
                         onCurrentIndexChanged: function () {
@@ -401,7 +401,7 @@ MuseScore {
             CheckBox {
                   id: layoutBreakCheckBox
                   checked: false
-                  text: "Layout break creates newline"
+                  text: qsTr("Layout break creates newline")
                   onCheckedChanged: function () {
                         console.log("check changed")
                         processPreview()
@@ -491,7 +491,7 @@ MuseScore {
 
       FileDialog {
             id: saveFileDialog
-            title: qsTr("Please specify destination for output")
+            title: qsTr("Output destination")
             selectExisting: false
             selectFolder: false
             selectMultiple: false
@@ -519,13 +519,13 @@ MuseScore {
                               //console.log(instrumentName)
 
                               processStaffVoice(staff,0)
-                              var lettersfn = bfn + "_" + instrumentName + "_B"
+                              var lettersfn = bfn + "_" + instrumentName + "_Letters"
                               lettersfn = dirname(filename)+lettersfn+"."+extension(filename)
                               outputFile.source = getLocalPath(lettersfn)
                               outputFile.write(outputLetters)
                               generatedFiles += lettersfn+"\n"
 
-                              var numbersfn = bfn + "_" + instrumentName + "_Z"
+                              var numbersfn = bfn + "_" + instrumentName + "_Numbers"
                               numbersfn = dirname(filename)+numbersfn+"."+extension(filename)
                               outputFile.source = getLocalPath(numbersfn)
                               outputFile.write(outputNumbers)
