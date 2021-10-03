@@ -18,30 +18,30 @@ MuseScore {
       property string outputLetters
 
       onRun: {
-            processScore()
+            processPreview()
       
       }
       function showObject(oObject) {
-		//	PURPOSE: Lists all key -> value pairs to the console.
-		//	NOTE: To reduce clutter I am filtering out any 
-		//'undefined' properties. (The MuseScore 'element' object
-		//is very flat - it will show many, many properties for any
-		//given element type; but for any given element many, if not 
-		//most of these properties will return 'undefined' as they 
-		//are not all valid for all element types. If you want to see 
-		//this comment out the filter.)
-		
-		if (Object.keys(oObject).length >0) {
-			Object.keys(oObject)
-				.filter(function(key) {
-					return oObject[key] != null;
-				})
-				.sort()
-				.forEach(function eachKey(key) {
-					console.log("---- ---- ", key, " : <", oObject[key], ">");
-				});
-		}
-	}
+        //  PURPOSE: Lists all key -> value pairs to the console.
+        //  NOTE: To reduce clutter I am filtering out any 
+        //'undefined' properties. (The MuseScore 'element' object
+        //is very flat - it will show many, many properties for any
+        //given element type; but for any given element many, if not 
+        //most of these properties will return 'undefined' as they 
+        //are not all valid for all element types. If you want to see 
+        //this comment out the filter.)
+        
+        if (Object.keys(oObject).length >0) {
+            Object.keys(oObject)
+                .filter(function(key) {
+                    return oObject[key] != null;
+                })
+                .sort()
+                .forEach(function eachKey(key) {
+                    console.log("---- ---- ", key, " : <", oObject[key], ">");
+                });
+        }
+    }
 
       function processHelper() {
             this.parts = []
@@ -72,6 +72,7 @@ MuseScore {
             },
             this.newRest = function(nind,dur) {
                   this.checkPart()
+                  //console.log(`rest of length ${dur}`)
                   this.parts[this.parts.length-1].data.push({
                         nind: nind,
                         type: "rest",
@@ -105,6 +106,16 @@ MuseScore {
                               }
                               return -1
                         })
+                        // normalize consecutive rests
+                        for (let j=0; j<p.data.length-1; j++) {
+                              if (p.data[j].type == "rest" && p.data[j+1].type == "rest") {
+                                    p.data[j].duration += p.data[j+1].duration
+                                    p.data.splice(j+1,1)
+                              }
+                        }
+                        if (p.data[0].type == "rest") {
+                              p.data.splice(0,1)
+                        }
                         if (i>0) {
                               outputLetters += "\n\n"
                               outputNumbers += "\n\n"
@@ -126,8 +137,11 @@ MuseScore {
                                           }
                                           break;
                                     case "rest": 
-                                          outputLetters += "  "
-                                          outputNumbers += "  "
+                                          //console.log(`rest of length ${p.data[j].duration*4} at ${p.data[j].nind}`)
+                                          var len = p.data[j].duration*4
+                                          var spaces = Math.floor(Math.max(2,Math.min(8,len*2.3)))
+                                          outputLetters += (" ").repeat(spaces)
+                                          outputNumbers += (" ").repeat(spaces)
                                           break;
                                     default:
                                           break;
@@ -136,11 +150,18 @@ MuseScore {
                   }
             }
       }
-      function processScore() {
+      function getStaffFromInd(i) {
+            var c = curScore.newCursor()
+            c.voice = 0
+            c.rewind(0)
+            c.staffIdx = i
+            return c.element.staff
+      }
 
+      function processStaffVoice(staff,voice) {
             var cur = curScore.newCursor()
-            cur.staffIdx = 0
-            cur.voice = 0
+            cur.staffIdx = staff
+            cur.voice = voice 
             cur.rewind(0)
 
             var pH = new processHelper()
@@ -157,9 +178,9 @@ MuseScore {
             while (cur.segment) {
             
                   var nind = cur.segment.tick/division
-                  console.log(`Segment ${i} at ${cur.segment.tick}`)
+                  //console.log(`Segment ${i} at ${cur.segment.tick}`)
                   //console.log(`  Tick ${+cur.segment.tick}`)
-                  console.log(`  Ind ${nind}`)
+                  //console.log(`  Ind ${nind}`)
                   //console.log(`  KeySig ${cur.keySignature}`)
                   //console.log(`  staff ${cur.staffIdx}  voice ${cur.voice}  track ${cur.track}`)
                   
@@ -170,7 +191,7 @@ MuseScore {
                         } else if (an.type==42) {
                               console.log(`  staff text`) // TODO: do the same as system text?
                         } else if (an.type==43) {
-                              console.log(`  system text: ${an.text}`)
+                              //console.log(`  system text: ${an.text}`)
                               outputLetters += `\n\n${an.text}:\n`
                               outputNumbers += `\n\n${an.text}:\n`
                               pH.newPart(an.text)
@@ -194,10 +215,10 @@ MuseScore {
                               var pitch = n.pitch
                               var tpitch = pitch + (n.tpc2-n.tpc1)
                               if (n.tieBack!==null && n.tieBack.startNote.pitch==n.pitch) {
-                                    console.log(`    Tie back ${n.tieBack.startNote.pitch}`)
+                                    //console.log(`    Tie back ${n.tieBack.startNote.pitch}`)
                               } else {
                                     pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch), dashes(tpitch))
-                                    console.log("    Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
+                                    //console.log("    Note  "+tpitch + "\t"+ lettersSharp(tpitch)+dashes(tpitch)+"    \t"+ lettersFlat(tpitch)+dashes(tpitch)+"\t"+ numbers(tpitch)+dashes(tpitch))//+"\t\t"+n.tpc+"\t"+n.tpc1+"\t"+n.tpc2+"\t"+(n.tpc2-n.tpc1))
                                     
                                     
                                     //outputLetters += letters(tpitch, cur)
@@ -207,9 +228,11 @@ MuseScore {
                               }
                         } else if (cur.element.type==Element.REST) {
                               var duration = cur.element.actualDuration
-                              pH.newRest(nind,duration)
+                              //console.log(`duration ${duration}`)
+                              //console.log(duration.numerator/duration.denuminator)
+                              pH.newRest(nind,duration.numerator/duration.denominator)
                               // cur.element has numerator,denuminator (of whole note), ticks and str
-                              console.log("    Rest\t"+duration.str)
+                              //console.log("    Rest\t"+duration.str)
                         } else {
                               console.log("  ======> Other element of type "+cur.element.userName()+")")
                         }
@@ -222,17 +245,17 @@ MuseScore {
                   for (let j=0; j<mes.length; j++) {
                         let me = mes[j]
                         if (me.type==Element.LAYOUT_BREAK) {
-                              console.log(`    position ${me.position.str}  timesig ${me.timesigActual.str} lastSegment ${m.lastSegment.name} ${m.lastSegment.segmentType} ${m.lastSegment.tick} ${cur.segment.tick}`)
+                              //console.log(`    position ${me.position.str}  timesig ${me.timesigActual.str} lastSegment ${m.lastSegment.name} ${m.lastSegment.segmentType} ${m.lastSegment.tick} ${cur.segment.tick}`)
                               pH.newLayoutBreak(m.lastSegment.tick/division)
                               if (!m.lastSegment) {
-                                    console.log(`    no lastSegment`)
+                                    //console.log(`    no lastSegment`)
                               } else if (m.lastSegment.is(cur.segment)) {
-                                    console.log(`    layout break`)
+                                    //console.log(`    layout break`)
                               } else {
-                                    console.log(`    too early for layout break`)
+                                    //console.log(`    too early for layout break`)
                                     var cs = m.firstSegment
                                     while (cs!=null) {
-                                          console.log(cs.name, cs.type, cs.segmentType, cs.tick)
+                                          //console.log(cs.name, cs.type, cs.segmentType, cs.tick)
                                           cs = cs.nextInMeasure
                                     }
                               }
@@ -253,18 +276,53 @@ MuseScore {
             console.log("collected")
             pH.getOutput()
             console.log(outputLetters)
-            /*
-            for (let i=0; i<pH.parts.length; i++) {
-                  let p = pH.parts[i]
-                  console.log(`part "${p.name}"`)
-                  for (let j=0; j<p.data.length; j++) {
-                        for (let k in p.data[j]) {
-                              console.log(`${k}: ${p.data[j][k]}`)
+      }
+      function getSelectedStaffsOrAllInd() {
+            // get selected staffs
+            var selectedStaffs = new Set()
+            if (curScore.selection.elements.length>0) {
+                  if (curScore.selection.isRange) {
+                        for (let i=curScore.selection.startStaff; i<curScore.selection.endStaff; i++) {
+                              selectedStaffs.add(i)
                         }
-                        //showObject(p.data[j])
+                  } else {
+                        var c = curScore.newCursor()
+                        c.voice = 0
+                        c.rewind(0)
+                        for (let i=0; i<curScore.selection.elements.length; i++) {
+                              var e = curScore.selection.elements[i]
+                              if (e.type==Element.CHORD || e.type==Element.NOTE || e.type==Element.REST) {
+                                    var selectInd = -1
+                                    for (let j=0; j<curScore.nstaves; j++) {
+                                          c.staffIdx = j
+                                          if (e.staff.is(c.element.staff)) {
+                                                //console.log(`found it at ${j}`)
+                                                selectInd = j
+                                                break
+                                          }
+                                    }
+                                    selectedStaffs.add(selectInd)
+                              }
+                        }
                   }
             }
-            */
+            if (selectedStaffs.size==0) {
+                  for (var i=0; i<curScore.nstaves; i++) {
+                        selectedStaffs.add(i)
+                  }
+            }
+            selectedStaffs = [...selectedStaffs]
+
+            return selectedStaffs
+      }
+      function processPreview() {
+            var selectedStaffs = getSelectedStaffsOrAllInd()
+            console.log("selectedStaffs")
+            for (let ss of selectedStaffs) {
+                  console.log(ss)
+            }
+
+            processStaffVoice(selectedStaffs[0], 0)
 
       }
 
@@ -306,7 +364,7 @@ MuseScore {
                         }
                         width: 70
                         onCurrentIndexChanged: function () {
-                              processScore()
+                              processPreview()
                               //console.debug(sharpOrFlatSelection.get(currentIndex).text)
                         }
                   }
@@ -314,11 +372,11 @@ MuseScore {
 
             CheckBox {
                   id: layoutBreakCheckBox
-                  checked: true
+                  checked: false
                   text: "Layout break creates newline"
                   onCheckedChanged: function () {
                         console.log("check changed")
-                        processScore()
+                        processPreview()
                   }
             }
       }
@@ -391,6 +449,18 @@ MuseScore {
             onError: console.log(msg)
       }
        
+      function dirname(p) {
+            return (p.slice(0,p.lastIndexOf("/")+1))
+      }
+       
+      function basename(p) {
+            return (p.slice(p.lastIndexOf("/")+1))
+      }
+
+      function extension(p) {
+            return (p.slice(p.lastIndexOf(".")+1))
+      }
+
       FileDialog {
             id: saveFileDialog
             title: qsTr("Please specify destination for output")
@@ -399,9 +469,44 @@ MuseScore {
             selectMultiple: false
             onAccepted: {
                   var filename = saveFileDialog.fileUrl.toString()
+                  var generatedFiles = "Generated files:\n\n"
                   if(filename){
+                        var bfn = basename(filename)
+                        bfn = bfn.slice(0,bfn.lastIndexOf('.'))
+
+                        var selectedStaffs = getSelectedStaffsOrAllInd()
+                        for (let staff of selectedStaffs) {
+                              //processStaffVoice()
+                              var sss = getStaffFromInd(staff)
+                              //console.log(sss.part, sss.part.instruments.length)
+                              //showObject(sss.part)
+                              //showObject(sss.part.instruments[0])
+
+                              // instrumentId (brass.trumpet.bflat)
+                              // longName (Trompete 1)
+                              // shortName (T1)
+                              var instrumentName = sss.part.instruments[0].longName
+                              instrumentName = instrumentName.replace(" ","_")
+                              //console.log(instrumentName)
+
+                              processStaffVoice(staff,0)
+                              var lettersfn = bfn + "_" + instrumentName + "_B"
+                              lettersfn = dirname(filename)+lettersfn+"."+extension(filename)
+                              outputFile.source = getLocalPath(lettersfn)
+                              outputFile.write(outputLetters)
+                              generatedFiles += lettersfn+"\n"
+
+                              var numbersfn = bfn + "_" + instrumentName + "_Z"
+                              numbersfn = dirname(filename)+numbersfn+"."+extension(filename)
+                              outputFile.source = getLocalPath(numbersfn)
+                              outputFile.write(outputNumbers)
+                              generatedFiles += numbersfn+"\n"
+            
+                        }
+
+
                         outputFile.source = getLocalPath(filename)
-                        outputFile.write(outputLetters)
+                        outputFile.write(generatedFiles)
                   }
             }
       }
@@ -558,4 +663,6 @@ MuseScore {
 TODO:
 - use concert pitch or make it an option
 - special ties maybe with more than two notes on same pitch
+- handle trombone and sousaphone (other instruments)
+- make mapping customizable
 */
