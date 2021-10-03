@@ -43,6 +43,14 @@ MuseScore {
         }
     }
 
+    function stringRepeat(s,c) {
+          var str = ""
+          for (var i=0; i<c; i++) {
+                str += s
+          }
+          return str
+    }
+
       function processHelper() {
             this.parts = []
             this.newPart = function(partname) {
@@ -94,8 +102,8 @@ MuseScore {
             this.getOutput = function() {
                   outputLetters = ""
                   outputNumbers = ""
-                  for (let i=0; i<this.parts.length; i++) {
-                        let p = this.parts[i]
+                  for (var i=0; i<this.parts.length; i++) {
+                        var p = this.parts[i]
                         p.data.sort(function(a,b) {
                               var dif = a.nind-b.nind
                               if (dif!=0) {
@@ -107,7 +115,7 @@ MuseScore {
                               return -1
                         })
                         // normalize consecutive rests
-                        for (let j=0; j<p.data.length-1; j++) {
+                        for (var j=0; j<p.data.length-1; j++) {
                               if (p.data[j].type == "rest" && p.data[j+1].type == "rest") {
                                     p.data[j].duration += p.data[j+1].duration
                                     p.data.splice(j+1,1)
@@ -124,7 +132,7 @@ MuseScore {
                               outputLetters += p.name+"\n"
                               outputNumbers += p.name+"\n"
                         }
-                        for (let j=0; j<p.data.length; j++) {
+                        for (var j=0; j<p.data.length; j++) {
                               switch(p.data[j].type) {
                                     case "note":
                                           outputLetters += p.data[j].letter + p.data[j].dashes + " "
@@ -140,8 +148,8 @@ MuseScore {
                                           //console.log(`rest of length ${p.data[j].duration*4} at ${p.data[j].nind}`)
                                           var len = p.data[j].duration*4
                                           var spaces = Math.floor(Math.max(2,Math.min(8,len*2.3)))
-                                          outputLetters += (" ").repeat(spaces)
-                                          outputNumbers += (" ").repeat(spaces)
+                                          outputLetters += stringRepeat(" ",spaces)
+                                          outputNumbers += stringRepeat(" ",spaces)
                                           break;
                                     default:
                                           break;
@@ -154,6 +162,7 @@ MuseScore {
             var c = curScore.newCursor()
             c.voice = 0
             c.rewind(0)
+            console.log("setting staff to "+i)
             c.staffIdx = i
             return c.element.staff
       }
@@ -180,7 +189,7 @@ MuseScore {
             
             var score = cur.score
             
-            console.log(`Score "${score.title}" ("${score.scoreName}") with ${score.nstaves} staves, ${score.ntracks} tracks, ${score.nmeasures} measures`)
+            console.log("Score "+score.title+" ("+score.scoreName+") with "+score.nstaves+" staves, "+score.ntracks+" tracks, "+score.nmeasures+" measures")
             console.log("---------")
 
             
@@ -194,19 +203,19 @@ MuseScore {
                   //console.log(`  KeySig ${cur.keySignature}`)
                   //console.log(`  staff ${cur.staffIdx}  voice ${cur.voice}  track ${cur.track}`)
                   
-                  for (let j=0; j<cur.segment.annotations.length; j++) {
+                  for (var j=0; j<cur.segment.annotations.length; j++) {
                         var an = cur.segment.annotations[j]
                         if (an.type==41) {
-                              console.log(`  tempo annotation`)
+                              console.log("  tempo annotation")
                         } else if (an.type==42) {
-                              console.log(`  staff text`) // TODO: do the same as system text?
+                              console.log("  staff text") // TODO: do the same as system text?
                         } else if (an.type==43) {
                               //console.log(`  system text: ${an.text}`)
-                              outputLetters += `\n\n${an.text}:\n`
-                              outputNumbers += `\n\n${an.text}:\n`
+                              outputLetters += "\n\n"+an.text+":\n"
+                              outputNumbers += "\n\n"+an.text+":\n"
                               pH.newPart(an.text)
                         } else {
-                              console.log(`  ======> Annotation with type ${an.type} ${an.userName()}`)
+                              console.log("  ======> Annotation with type "+an.type+" "+an.userName())
                         }
                   }
 
@@ -252,8 +261,8 @@ MuseScore {
 
                   var mes = cur.measure.elements
                   var m = cur.measure
-                  for (let j=0; j<mes.length; j++) {
-                        let me = mes[j]
+                  for (var j=0; j<mes.length; j++) {
+                        var me = mes[j]
                         if (me.type==Element.LAYOUT_BREAK) {
                               //console.log(`    position ${me.position.str}  timesig ${me.timesigActual.str} lastSegment ${m.lastSegment.name} ${m.lastSegment.segmentType} ${m.lastSegment.tick} ${cur.segment.tick}`)
                               pH.newLayoutBreak(m.lastSegment.tick/division)
@@ -270,7 +279,7 @@ MuseScore {
                                     }
                               }
                         } else {
-                              console.log(`    =====> Other measure element ${m.name}`)
+                              console.log("    =====> Other measure element "+m.name)
                         }
                   }
                   
@@ -289,21 +298,21 @@ MuseScore {
       }
       function getSelectedStaffsOrAllInd() {
             // get selected staffs
-            var selectedStaffs = new Set()
+            var selectedStaffs = []
             if (curScore.selection.elements.length>0) {
                   if (curScore.selection.isRange) {
-                        for (let i=curScore.selection.startStaff; i<curScore.selection.endStaff; i++) {
-                              selectedStaffs.add(i)
+                        for (var i=curScore.selection.startStaff; i<curScore.selection.endStaff; i++) {
+                              selectedStaffs.push(i)
                         }
                   } else {
                         var c = curScore.newCursor()
                         c.voice = 0
                         c.rewind(0)
-                        for (let i=0; i<curScore.selection.elements.length; i++) {
+                        for (var i=0; i<curScore.selection.elements.length; i++) {
                               var e = curScore.selection.elements[i]
                               if (e.type==Element.CHORD || e.type==Element.NOTE || e.type==Element.REST) {
                                     var selectInd = -1
-                                    for (let j=0; j<curScore.nstaves; j++) {
+                                    for (var j=0; j<curScore.nstaves; j++) {
                                           c.staffIdx = j
                                           if (e.staff.is(c.element.staff)) {
                                                 //console.log(`found it at ${j}`)
@@ -311,30 +320,35 @@ MuseScore {
                                                 break
                                           }
                                     }
-                                    selectedStaffs.add(selectInd)
+                                    if (selectedStaffs.indexOf(selectInd)<0) {
+                                          selectedStaffs.push(selectInd)
+                                    }
                               }
                         }
                   }
             }
-            if (selectedStaffs.size==0) {
+            console.log(selectedStaffs.length+" staffs selected")
+            if (selectedStaffs.length==0) {
                   for (var i=0; i<curScore.nstaves; i++) {
-                        selectedStaffs.add(i)
+                        selectedStaffs.push(i)
                   }
             }
-            selectedStaffs = [...selectedStaffs]
+            //selectedStaffs = Array.from(selectedStaffs)
 
             return selectedStaffs
       }
       function processPreview() {
             var selectedStaffs = getSelectedStaffsOrAllInd()
             console.log("selectedStaffs")
-            for (let staff of selectedStaffs) {
+            for (var i=0; i<selectedStaffs.length; i++) {
+                  var staff = selectedStaffs[i]
                   console.log(staff)
                   var sss = getStaffFromInd(staff)
                   //console.log(sss.part, sss.part.instruments.length)
                   //showObject(sss.part)
                   //showObject(sss.part.instruments[0])
             }
+            console.log("__")
 
             processStaffVoice(selectedStaffs[0], 0)
 
@@ -489,8 +503,9 @@ MuseScore {
                         bfn = bfn.slice(0,bfn.lastIndexOf('.'))
 
                         var selectedStaffs = getSelectedStaffsOrAllInd()
-                        for (let staff of selectedStaffs) {
-                              //processStaffVoice()
+                        for (var i=0; i<selectedStaffs.length; i++) {
+                              var staff = selectedStaffs[i]
+                              console.log("processing staff "+staff)
                               var sss = getStaffFromInd(staff)
                               //console.log(sss.part, sss.part.instruments.length)
                               //showObject(sss.part)
