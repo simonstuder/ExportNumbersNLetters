@@ -162,7 +162,6 @@ MuseScore {
             var c = curScore.newCursor()
             c.voice = 0
             c.rewind(0)
-            console.log("setting staff to "+i)
             c.staffIdx = i
             return c.element.staff
       }
@@ -327,7 +326,6 @@ MuseScore {
                         }
                   }
             }
-            console.log(selectedStaffs.length+" staffs selected")
             if (selectedStaffs.length==0) {
                   for (var i=0; i<curScore.nstaves; i++) {
                         selectedStaffs.push(i)
@@ -510,6 +508,9 @@ MuseScore {
                               //console.log(sss.part, sss.part.instruments.length)
                               //showObject(sss.part)
                               //showObject(sss.part.instruments[0])
+                              if (!sss.part.hasPitchedStaff) {
+                                  continue
+                              }
 
                               // instrumentId (brass.trumpet.bflat)
                               // longName (Trompete 1)
@@ -533,10 +534,10 @@ MuseScore {
             
                         }
 
-
                         outputFile.source = getLocalPath(filename)
                         outputFile.write(generatedFiles)
                   }
+                  processPreview()
             }
       }
 
