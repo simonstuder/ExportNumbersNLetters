@@ -536,6 +536,8 @@ MuseScore {
 
                         outputFile.source = getLocalPath(filename)
                         outputFile.write(generatedFiles)
+                        // on success quit plugin
+                        Qt.quit()
                   }
                   processPreview()
             }
