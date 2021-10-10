@@ -1,6 +1,6 @@
-import QtQuick 2.0
+import QtQuick 2.2
 import QtQuick.Dialogs 1.0
-import QtQuick.Controls 1.0
+import QtQuick.Controls 2.0
 import MuseScore 3.0
 import FileIO 3.0
 
@@ -79,6 +79,7 @@ MuseScore {
                   })
             },
             this.newRest = function(nind,dur) {
+                  return
                   this.checkPart()
                   //console.log(`rest of length ${dur}`)
                   this.parts[this.parts.length-1].data.push({
@@ -89,6 +90,7 @@ MuseScore {
             },
             this.lastLayoutInfoNind = -1,
             this.newLayoutBreak = function(nind) {
+                  return // TODO: handle differently
                   if (nind<=this.lastLayoutInfoNind) {
                         return
                   }
@@ -121,7 +123,7 @@ MuseScore {
                                     p.data.splice(j+1,1)
                               }
                         }
-                        if (p.data[0].type == "rest") {
+                        if (p.data.length>0 && p.data[0].type == "rest") {
                               p.data.splice(0,1)
                         }
                         if (i>0) {
@@ -133,6 +135,22 @@ MuseScore {
                               outputNumbers += p.name+"\n"
                         }
                         for (var j=0; j<p.data.length; j++) {
+                              if (p.data[j].type=="note") {
+                                    var dist = 0
+                                    if (j>0) {
+                                          dist = p.data[j].nind-p.data[j-1].nind
+                                    }
+                                    var spaces = Math.floor(dist*scalingSlider.value*3)
+                                    console.log(dist,spaces)
+                                    outputLetters += stringRepeat(" ",spaces)
+                                    outputNumbers += stringRepeat(" ",spaces)
+
+                                    outputLetters += p.data[j].letter + p.data[j].dashes + " "
+                                    outputNumbers += p.data[j].number + p.data[j].dashes + " "
+                              } else {
+                                    console.log(p.data[j].type)
+                              }
+                              /*
                               switch(p.data[j].type) {
                                     case "note":
                                           outputLetters += p.data[j].letter + p.data[j].dashes + " "
@@ -154,6 +172,7 @@ MuseScore {
                                     default:
                                           break;
                               }
+                              */
                         }
                   }
             }
@@ -374,13 +393,15 @@ MuseScore {
             Row {
                   spacing: 2
 
-                  Text {
+                  Label {
                         id: sharpOrFlatLabel
                         text: qsTr("Use sharps or flats")
                         anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
                   }
                   ComboBox {
                         id: sharpOrFlatSelectionBox
+                        textRole: "text"
+                        valueRole: "value"
                         currentIndex: 0
                         model: ListModel {
                               id: sharpOrFlatSelection
@@ -388,7 +409,7 @@ MuseScore {
                               ListElement { text: qsTr("sharps"); value: "sharp" }
                               ListElement { text: qsTr("flats"); value: "flat" }
                         }
-                        width: 70
+                        width: 90
                         onCurrentIndexChanged: function () {
                               processPreview()
                               //console.debug(sharpOrFlatSelection.get(currentIndex).text)
@@ -405,6 +426,23 @@ MuseScore {
                         processPreview()
                   }
             }
+
+            Row {
+                  Label {
+                        text: qsTr("Spacing")
+                        anchors.verticalCenter: scalingSlider.verticalCenter
+                  }
+
+                  Slider {
+                        id: scalingSlider
+                        from: 0
+                        to: 1
+                        onMoved: function() {
+                              console.log("slider changed")
+                              processPreview()
+                        }
+                  }
+            }
       }
 
       TextArea {
@@ -419,6 +457,10 @@ MuseScore {
             wrapMode: TextEdit.WrapAnywhere
             textFormat: TextEdit.PlainText
             text: outputLetters
+
+            background: Rectangle {
+                  border.color: control.enabled ? "#21be2b" : "transparent"
+            }
       }
 
       TextArea {
@@ -433,6 +475,10 @@ MuseScore {
             wrapMode: TextEdit.WrapAnywhere
             textFormat: TextEdit.PlainText
             text: outputNumbers
+
+            background: Rectangle {
+                  border.color: control.enabled ? "#21be2b" : "transparent"
+            }
       }
 
 
