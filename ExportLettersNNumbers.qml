@@ -566,13 +566,13 @@ MuseScore {
                               //console.log(instrumentName)
 
                               processStaffVoice(staff,0)
-                              var lettersfn = bfn + "_" + instrumentName + "_Letters"
+                              var lettersfn = bfn + "-" + instrumentName + "_Letters"
                               lettersfn = dirname(filename)+lettersfn+"."+extension(filename)
                               outputFile.source = getLocalPath(lettersfn)
                               outputFile.write(outputLetters)
                               generatedFiles += lettersfn+"\n"
 
-                              var numbersfn = bfn + "_" + instrumentName + "_Numbers"
+                              var numbersfn = bfn + "-" + instrumentName + "_Numbers"
                               numbersfn = dirname(filename)+numbersfn+"."+extension(filename)
                               outputFile.source = getLocalPath(numbersfn)
                               outputFile.write(outputNumbers)
