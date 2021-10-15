@@ -141,14 +141,14 @@ MuseScore {
                                           dist = p.data[j].nind-p.data[j-1].nind
                                     }
                                     var spaces = Math.floor(dist*scalingSlider.value*3)
-                                    console.log(dist,spaces)
+                                    //console.log(dist,spaces)
                                     outputLetters += stringRepeat(" ",spaces)
                                     outputNumbers += stringRepeat(" ",spaces)
 
                                     outputLetters += p.data[j].letter + p.data[j].dashes + " "
                                     outputNumbers += p.data[j].number + p.data[j].dashes + " "
                               } else {
-                                    console.log(p.data[j].type)
+                                    //console.log(p.data[j].type)
                               }
                               /*
                               switch(p.data[j].type) {
@@ -537,14 +537,24 @@ MuseScore {
             id: saveFileDialog
             title: qsTr("Output destination")
             selectExisting: false
-            selectFolder: false
+            selectFolder: true
             selectMultiple: false
             onAccepted: {
                   var filename = saveFileDialog.fileUrl.toString()
                   var generatedFiles = "Generated files:\n\n"
+                  //console.log("accepted "+filename)
                   if(filename){
-                        var bfn = basename(filename)
-                        bfn = bfn.slice(0,bfn.lastIndexOf('.'))
+
+                        filename = getLocalPath(filename)
+                        var destFolder = dirname(filename+"/")
+                        //console.log("Saving to folder "+filename)
+
+                        var score = curScore
+                        var origPath = score.path
+                        var cdir = dirname(origPath)
+                        var cname = basename(origPath)
+                        cname = cname.slice(0, cname.lastIndexOf('.'))
+                        //console.log("cname "+cname)
 
                         var selectedStaffs = getSelectedStaffsOrAllInd()
                         for (var i=0; i<selectedStaffs.length; i++) {
@@ -566,14 +576,14 @@ MuseScore {
                               //console.log(instrumentName)
 
                               processStaffVoice(staff,0)
-                              var lettersfn = bfn + "-" + instrumentName + "_Letters"
-                              lettersfn = dirname(filename)+lettersfn+"."+extension(filename)
+                              var lettersfn = cname + "-" + instrumentName + "_Letters"
+                              lettersfn = destFolder+lettersfn+".txt"
                               outputFile.source = getLocalPath(lettersfn)
                               outputFile.write(outputLetters)
                               generatedFiles += lettersfn+"\n"
 
-                              var numbersfn = bfn + "-" + instrumentName + "_Numbers"
-                              numbersfn = dirname(filename)+numbersfn+"."+extension(filename)
+                              var numbersfn = cname + "-" + instrumentName + "_Numbers"
+                              numbersfn = destFolder+numbersfn+".txt"
                               outputFile.source = getLocalPath(numbersfn)
                               outputFile.write(outputNumbers)
                               generatedFiles += numbersfn+"\n"
