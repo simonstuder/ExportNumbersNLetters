@@ -401,7 +401,6 @@ MuseScore {
                   ComboBox {
                         id: sharpOrFlatSelectionBox
                         textRole: "text"
-                        valueRole: "value"
                         currentIndex: 0
                         model: ListModel {
                               id: sharpOrFlatSelection
