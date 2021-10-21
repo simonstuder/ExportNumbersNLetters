@@ -429,11 +429,23 @@ MuseScore {
 
       }
 
-      Column {
+      Control {
+            id: mainControl
             spacing: 2
+            padding: 2
+            width: parent.width
+            height: parent.height
 
-            Row {
+            Control {
                   id: titleRow
+
+                  anchors.top: parent.top
+                  anchors.left: parent.left
+                  anchors.right: parent.right
+                  anchors.topMargin: 2
+                  anchors.leftMargin: 2
+                  anchors.bottomMargin: 2
+                  width: parent.width
 
                   Label {
                         id: textLabel
@@ -443,13 +455,18 @@ MuseScore {
                   }
             }
 
-            Row {
+            Control {
                   id: mainRow
-                  spacing: 4
+                  anchors.top: titleRow.bottom
+                  leftPadding: 4
+                  height: childrenRect.height
 
-                  Column {
+                  Control {
                         id: textAreaColumn
                         spacing: 8
+
+                        leftPadding: 4
+                        height: childrenRect.height
 
                         TextArea {
                               id: previewTextLetters
@@ -471,18 +488,23 @@ MuseScore {
                               wrapMode: TextEdit.WrapAnywhere
                               textFormat: TextEdit.PlainText
                               text: outputNumbers
+                              anchors.top: previewTextLetters.bottom
 
                               background: Rectangle {
                                     border.color:"#111111"
                               }
                         }
                   }
-                  Column {
+                  Control {
                         id: settingsColumn
                         spacing: 8
+                        anchors.left: textAreaColumn.right
 
-                        Row {
+                        Control {
+                              id: sharpOrFlatRow
                               spacing: 2
+                              width: childrenRect.width
+                              height: childrenRect.height
 
                               Label {
                                     id: sharpOrFlatLabel
@@ -491,6 +513,7 @@ MuseScore {
                               }
                               ComboBox {
                                     id: sharpOrFlatSelectionBox
+                                    anchors.left: sharpOrFlatLabel.right
                                     textRole: "text"
                                     currentIndex: 0
                                     model: ListModel {
@@ -506,8 +529,12 @@ MuseScore {
                               }
                         }
 
-                        Row {
+                        Control {
                               spacing: 2
+                              id: outputFormatRow
+                              anchors.top: sharpOrFlatRow.bottom
+                              width: childrenRect.width
+                              height: childrenRect.height
 
                               Label {
                                     id: outputFormatLabel
@@ -516,6 +543,7 @@ MuseScore {
                               }
                               ComboBox {
                                     id: outputFormatSelectionBox
+                                    anchors.left: outputFormatLabel.right
                                     textRole: "text"
                                     model: ListModel {
                                           id: outputFormatSelection
@@ -531,15 +559,21 @@ MuseScore {
                               }
                         }
 
-                        Row {
+                        Control {
                               spacing: 8
+                              id: lettersSuffixRow
+                              anchors.top: outputFormatRow.bottom
+                              width: childrenRect.width
+                              height: childrenRect.height
+
                               Label {
                                     id: lettersSuffixLabel
                                     text: qsTr("Letters file suffix")
-                                    //anchors.verticalCenter: lettersSuffix.verticalCenter
+                                    anchors.verticalCenter: lettersSuffixRect.verticalCenter
                               }
                               Rectangle {
                                     id: lettersSuffixRect
+                                    anchors.left: lettersSuffixLabel.right
                                     color: "white"
                                     width: childrenRect.width
                                     height: childrenRect.height
@@ -553,15 +587,21 @@ MuseScore {
                               }
                         }
 
-                        Row {
+                        Control {
                               spacing: 8
+                              id: numbersSuffixRow
+                              anchors.top: lettersSuffixRow.bottom
+                              width: childrenRect.width
+                              height: childrenRect.height
+
                               Label {
                                     id: numbersSuffixLabel
                                     text: qsTr("Numbers file suffix")
-                                    //anchors.verticalCenter: numbersSuffix.verticalCenter
+                                    anchors.verticalCenter: numbersSuffixRect.verticalCenter
                               }
                               Rectangle {
                                     id: numbersSuffixRect
+                                    anchors.left: numbersSuffixLabel.right
                                     color: "white"
                                     width: childrenRect.width
                                     height: childrenRect.height
@@ -577,6 +617,7 @@ MuseScore {
 
                         CheckBox {
                               id: layoutBreakCheckBox
+                              anchors.top: numbersSuffixRow.bottom
                               checked: false
                               text: qsTr("Layout break creates newline")
                               onCheckedChanged: function () {
@@ -585,14 +626,20 @@ MuseScore {
                               }
                         }
 
-                        Row {
+                        Control {
+                              anchors.top: layoutBreakCheckBox.bottom
+                              width: childrenRect.width
+                              height: childrenRect.height
+
                               Label {
+                                    id: scalingLabel
                                     text: qsTr("Spacing")
                                     anchors.verticalCenter: scalingSlider.verticalCenter
                               }
 
                               Slider {
                                     id: scalingSlider
+                                    anchors.left: scalingLabel.right
                                     from: 0
                                     to: 1
                                     onMoved: function() {
@@ -603,11 +650,16 @@ MuseScore {
                   }
             }
 
-            Row {
+            Control {
                   id: buttonRow
+                  anchors.top: mainRow.bottom
+                  anchors.bottom: parent.bottom
+                  width: parent.width
+                  height: childrenRect.height
 
                   Button {
                         id : buttonSaveOutput
+                        anchors.right: buttonCancel.left
                         text: qsTr("Save Output")
                         onClicked: {
                               console.log("save output")
@@ -617,6 +669,7 @@ MuseScore {
 
                   Button {
                         id : buttonCancel
+                        anchors.right: buttonRow.right
                         text: qsTr("Cancel")
                         onClicked: {
                               Qt.quit();
