@@ -431,8 +431,6 @@ MuseScore {
 
       Control {
             id: mainControl
-            spacing: 2
-            padding: 2
             width: parent.width
             height: parent.height
 
@@ -463,8 +461,11 @@ MuseScore {
 
                   Control {
                         id: textAreaColumn
+<<<<<<< Updated upstream
                         spacing: 8
 
+=======
+>>>>>>> Stashed changes
                         leftPadding: 4
                         height: childrenRect.height
 
@@ -497,7 +498,6 @@ MuseScore {
                   }
                   Control {
                         id: settingsColumn
-                        spacing: 8
                         anchors.left: textAreaColumn.right
 
                         Control {
@@ -530,7 +530,6 @@ MuseScore {
                         }
 
                         Control {
-                              spacing: 2
                               id: outputFormatRow
                               anchors.top: sharpOrFlatRow.bottom
                               width: childrenRect.width
@@ -560,7 +559,6 @@ MuseScore {
                         }
 
                         Control {
-                              spacing: 8
                               id: lettersSuffixRow
                               anchors.top: outputFormatRow.bottom
                               width: childrenRect.width
@@ -588,7 +586,6 @@ MuseScore {
                         }
 
                         Control {
-                              spacing: 8
                               id: numbersSuffixRow
                               anchors.top: lettersSuffixRow.bottom
                               width: childrenRect.width
