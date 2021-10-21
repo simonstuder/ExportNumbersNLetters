@@ -461,11 +461,6 @@ MuseScore {
 
                   Control {
                         id: textAreaColumn
-<<<<<<< Updated upstream
-                        spacing: 8
-
-=======
->>>>>>> Stashed changes
                         leftPadding: 4
                         height: childrenRect.height
 
