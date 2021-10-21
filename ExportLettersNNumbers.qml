@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.15
 import QtQuick.Dialogs 1.0
 import QtQuick.Controls 2.0
 import MuseScore 3.0
@@ -429,191 +429,201 @@ MuseScore {
 
       }
 
-      Label {
-            id: textLabel
-            wrapMode: Text.WordWrap
-            text: qsTr("Preview of current settings on the right")
-            font.pointSize:12
-            anchors.left: window.left
-            anchors.top: window.top
-            anchors.leftMargin: 10
-            anchors.topMargin: 10
-      }
-
       Column {
-            id: settingsColumn
-            anchors.top: textLabel.bottom
-            anchors.right: window.right
-            anchors.topMargin: 10
-            anchors.rightMargin: 10
-            spacing: 10
+            spacing: 2
 
             Row {
-                  spacing: 2
+                  id: titleRow
+                  padding: 2
 
                   Label {
-                        id: sharpOrFlatLabel
-                        text: qsTr("Use sharps or flats")
-                        anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
-                  }
-                  ComboBox {
-                        id: sharpOrFlatSelectionBox
-                        textRole: "text"
-                        currentIndex: 0
-                        model: ListModel {
-                              id: sharpOrFlatSelection
-                              ListElement { text: "auto"; value: "auto" }
-                              ListElement { text: qsTr("sharps"); value: "sharp" }
-                              ListElement { text: qsTr("flats"); value: "flat" }
-                        }
-                        width: 90
-                        onCurrentIndexChanged: function () {
-                              processPreview()
-                        }
+                        id: textLabel
+                        wrapMode: Text.WordWrap
+                        text: qsTr("Preview of current settings on the right")
+                        font.pointSize:12
                   }
             }
 
             Row {
-                  spacing: 2
+                  id: mainRow
+                  spacing: 4
 
-                  Label {
-                        id: outputFormatLabel
-                        text: qsTr("Output Format")
-                        anchors.verticalCenter: outputFormatSelectionBox.verticalCenter
-                  }
-                  ComboBox {
-                        id: outputFormatSelectionBox
-                        textRole: "text"
-                        model: ListModel {
-                              id: outputFormatSelection
-                              ListElement { text: "docx"; value: "docx" }
-                              ListElement { text: "txt"; value: "txt" }
-                              ListElement { text: "md"; value: "md" }
-                              ListElement { text: "html"; value: "html" }
+                  Column {
+                        id: textAreaColumn
+                        spacing: 8
+                        leftPadding: 4
+
+                        TextArea {
+                              id: previewTextLetters
+                              height: 250
+                              width: 500
+                              wrapMode: TextEdit.WrapAnywhere
+                              textFormat: TextEdit.PlainText
+                              text: outputLetters
+
+                              background: Rectangle {
+                                    border.color: "#111111"
+                              }
                         }
-                        width: 90
-                        onCurrentIndexChanged: function () {
-                              console.debug("selected "+outputFormatSelection.get(currentIndex).text+" ("+currentIndex+")")
+
+                        TextArea {
+                              id: previewTextNumbers
+                              height: 250
+                              width: 500
+                              wrapMode: TextEdit.WrapAnywhere
+                              textFormat: TextEdit.PlainText
+                              text: outputNumbers
+
+                              background: Rectangle {
+                                    border.color:"#111111"
+                              }
+                        }
+                  }
+                  Column {
+                        id: settingsColumn
+                        spacing: 8
+
+                        Row {
+                              spacing: 2
+
+                              Label {
+                                    id: sharpOrFlatLabel
+                                    text: qsTr("Use sharps or flats")
+                                    anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
+                              }
+                              ComboBox {
+                                    id: sharpOrFlatSelectionBox
+                                    textRole: "text"
+                                    currentIndex: 0
+                                    model: ListModel {
+                                          id: sharpOrFlatSelection
+                                          ListElement { text: "auto"; value: "auto" }
+                                          ListElement { text: qsTr("sharps"); value: "sharp" }
+                                          ListElement { text: qsTr("flats"); value: "flat" }
+                                    }
+                                    width: 90
+                                    onCurrentIndexChanged: function () {
+                                          processPreview()
+                                    }
+                              }
+                        }
+
+                        Row {
+                              spacing: 2
+
+                              Label {
+                                    id: outputFormatLabel
+                                    text: qsTr("Output Format")
+                                    anchors.verticalCenter: outputFormatSelectionBox.verticalCenter
+                              }
+                              ComboBox {
+                                    id: outputFormatSelectionBox
+                                    textRole: "text"
+                                    model: ListModel {
+                                          id: outputFormatSelection
+                                          ListElement { text: "docx"; value: "docx" }
+                                          ListElement { text: "txt"; value: "txt" }
+                                          ListElement { text: "md"; value: "md" }
+                                          ListElement { text: "html"; value: "html" }
+                                    }
+                                    width: 90
+                                    onCurrentIndexChanged: function () {
+                                          console.debug("selected "+outputFormatSelection.get(currentIndex).text+" ("+currentIndex+")")
+                                    }
+                              }
+                        }
+
+                        Row {
+                              spacing: 8
+                              Label {
+                                    id: lettersSuffixLabel
+                                    text: qsTr("Letters file suffix")
+                                    //anchors.verticalCenter: lettersSuffix.verticalCenter
+                              }
+                              Rectangle {
+                                    id: lettersSuffixRect
+                                    color: "white"
+                                    width: childrenRect.width
+                                    height: childrenRect.height
+
+                                    TextEdit {
+                                          id: lettersSuffix
+                                          width: 120
+                                          text: "Letters"
+                                          selectByMouse: true
+                                    }
+                              }
+                        }
+
+                        Row {
+                              spacing: 8
+                              Label {
+                                    id: numbersSuffixLabel
+                                    text: qsTr("Numbers file suffix")
+                                    //anchors.verticalCenter: numbersSuffix.verticalCenter
+                              }
+                              Rectangle {
+                                    id: numbersSuffixRect
+                                    color: "white"
+                                    width: childrenRect.width
+                                    height: childrenRect.height
+
+                                    TextEdit {
+                                          id: numbersSuffix
+                                          width: 120
+                                          text: "Numbers"
+                                          selectByMouse: true
+                                    }
+                              }
+                        }
+
+                        CheckBox {
+                              id: layoutBreakCheckBox
+                              checked: false
+                              text: qsTr("Layout break creates newline")
+                              onCheckedChanged: function () {
+                                    console.log("check changed")
+                                    processPreview()
+                              }
+                        }
+
+                        Row {
+                              Label {
+                                    text: qsTr("Spacing")
+                                    anchors.verticalCenter: scalingSlider.verticalCenter
+                              }
+
+                              Slider {
+                                    id: scalingSlider
+                                    from: 0
+                                    to: 1
+                                    onMoved: function() {
+                                          processPreview()
+                                    }
+                              }
                         }
                   }
             }
 
             Row {
-                  spacing: 8
-                  Label {
-                        id: lettersSuffixLabel
-                        text: qsTr("Letters file suffix")
-                        anchors.verticalCenter: lettersSuffix.verticalCenter
-                  }
-                  TextEdit {
-                        id: lettersSuffix
-                        width: 120
-                        text: "Letters"
-                        selectByMouse: true
-                  }
-            }
+                  id: buttonRow
 
-            Row {
-                  spacing: 8
-                  Label {
-                        id: numbersSuffixLabel
-                        text: qsTr("Numbers file suffix")
-                        anchors.verticalCenter: numbersSuffix.verticalCenter
-                  }
-                  TextEdit {
-                        id: numbersSuffix
-                        width: 120
-                        text: "Numbers"
-                        selectByMouse: true
-                  }
-            }
-
-            CheckBox {
-                  id: layoutBreakCheckBox
-                  checked: false
-                  text: qsTr("Layout break creates newline")
-                  onCheckedChanged: function () {
-                        console.log("check changed")
-                        processPreview()
-                  }
-            }
-
-            Row {
-                  Label {
-                        text: qsTr("Spacing")
-                        anchors.verticalCenter: scalingSlider.verticalCenter
-                  }
-
-                  Slider {
-                        id: scalingSlider
-                        from: 0
-                        to: 1
-                        onMoved: function() {
-                              processPreview()
+                  Button {
+                        id : buttonSaveOutput
+                        text: qsTr("Save Output")
+                        onClicked: {
+                              console.log("save output")
+                              saveFileDialog.open()
                         }
                   }
-            }
-      }
 
-      TextArea {
-            id: previewTextLetters
-            anchors.top: textLabel.bottom
-            anchors.left: window.left
-            anchors.right: settingsColumn.left
-            anchors.topMargin: 10
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
-            height:250
-            wrapMode: TextEdit.WrapAnywhere
-            textFormat: TextEdit.PlainText
-            text: outputLetters
-
-            background: Rectangle {
-                  border.color: "#111111"
-            }
-      }
-
-      TextArea {
-            id: previewTextNumbers
-            anchors.top: previewTextLetters.bottom
-            anchors.left: window.left
-            anchors.right: settingsColumn.left
-            anchors.topMargin: 10
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
-            height:250
-            wrapMode: TextEdit.WrapAnywhere
-            textFormat: TextEdit.PlainText
-            text: outputNumbers
-
-            background: Rectangle {
-                  border.color:"#111111"
-            }
-      }
-
-
-      Button {
-            id : buttonCancel
-            text: qsTr("Cancel")
-            anchors.bottom: window.bottom
-            anchors.right: window.right
-            anchors.rightMargin: 10
-            anchors.bottomMargin: 10
-            onClicked: {
-                  Qt.quit();
-            }
-      }
-
-      Button {
-            id : buttonSaveOutput
-            text: qsTr("Save Output")
-            anchors.bottom: window.bottom
-            anchors.right: previewTextNumbers.right
-            anchors.rightMargin: 10
-            anchors.bottomMargin: 10
-            onClicked: {
-                  console.log("save output")
-                  saveFileDialog.open()
+                  Button {
+                        id : buttonCancel
+                        text: qsTr("Cancel")
+                        onClicked: {
+                              Qt.quit();
+                        }
+                  }
             }
       }
 
@@ -667,7 +677,6 @@ MuseScore {
             selectExisting: false
             selectFolder: true
             selectMultiple: false
-            folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
             onAccepted: {
                   var filename = saveFileDialog.fileUrl.toString()
                   var generatedFiles = "Generated files:\n\n"
