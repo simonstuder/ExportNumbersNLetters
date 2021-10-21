@@ -561,10 +561,10 @@ MuseScore {
                   Label {
                         id: outputFormatLabel
                         text: qsTr("Output Format")
-                        anchors.verticalCenter: outputFormalSelectionBox.verticalCenter
+                        anchors.verticalCenter: outputFormatSelectionBox.verticalCenter
                   }
                   ComboBox {
-                        id: outputFormalSelectionBox
+                        id: outputFormatSelectionBox
                         textRole: "text"
                         //currentIndex: 0
                         model: ListModel {
@@ -747,11 +747,10 @@ MuseScore {
                         var cname = basename(origPath)
                         cname = cname.slice(0, cname.lastIndexOf('.'))
 
-                        // TODO: automate
-                        var format = outputFormatSelection.get(outputFormatSelection.currentIndex).value
-                        console.log("requesting format "+format+" "+outputFormatSelection.currentIndex+" "+outputFormatSelection.currentText)
-                        format = "docx"
-                        var ext = "md"
+                        var format = outputFormatSelection.get(outputFormatSelectionBox.currentIndex).value
+                        console.log("requesting format "+format+" "+outputFormatSelectionBox.currentIndex+" "+outputFormatSelectionBox.currentText+" "+outputFormatSelection.get(outputFormatSelectionBox.currentIndex))
+                        
+                        var ext = "txt"
                         switch(format) {
                               case "md":
                                     ext = "md"
