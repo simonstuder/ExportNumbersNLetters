@@ -106,38 +106,53 @@ MuseScore {
                         }
                   } else {
                   }
+
+                  var rowInd = 0
                   for (var j=0; j<this.data.length; j++) {
                         if (this.data[j].type=="note") {
-                              var dist = 0
-                              for (var k=j-1; k>=0; k--) {
-                                    if (this.data[k].type == "note") {
-                                          dist = this.data[j].nind-this.data[k].nind
-                                          break
+                              if (rowInd>0) {
+                                    var dist = 0
+                                    for (var k=j-1; k>=0; k--) {
+                                          if (this.data[k].type == "note") {
+                                                dist = this.data[j].nind-this.data[k].nind
+                                                break
+                                          }
                                     }
+                                    var spaces = Math.floor(dist*scalingSlider.value*3)
+                                    var spaceVal = " "
+                                    switch(format) {
+                                          case "html":
+                                          case "docx":
+                                                spaceVal = "&nbsp;"
+                                                break
+                                          default:
+                                                spaceVal = " "
+                                    }
+                                    oL += stringRepeat(spaceVal, spaces)
+                                    oN += stringRepeat(spaceVal, spaces)
                               }
-                              var spaces = Math.floor(dist*scalingSlider.value*3)
-                              //console.log(dist,spaces)
-                              switch(format) {
-                                    case "html":
-                                    case "docx":
-                                          oL += stringRepeat("&nbsp;",spaces)
-                                          oN += stringRepeat("&nbsp;",spaces)
-                                          break
-                                    default:
-                                          oL += stringRepeat(" ",spaces)
-                                          oN += stringRepeat(" ",spaces)
-                              }
+
                               var no = this.data[j].getOutput(format)
                               oL += no.letters
                               oN += no.numbers
                         } else if (this.data[j].type=="layout_break") {
                               if (layoutBreakCheckBox.checked) {
-                                    oL += "\n"
-                                    oN += "\n"
+                                    switch(format)  {
+                                          case "html":
+                                          case "docx":
+                                                oL += "<br></br>"
+                                                oN += "<br></br>"
+                                                break
+                                          default:
+                                                oL += "\n"
+                                                oN += "\n"
+                                    }
+                                    rowInd = -1
                               }
                         } else {
                               console.log("different type "+this.data[j].type)
                         }
+                        rowInd++
                   }
                   return {
                         letters: oL,
@@ -471,8 +486,8 @@ MuseScore {
                         textRole: "text"
                         model: ListModel {
                               id: outputFormatSelection
-                              ListElement { text: "txt"; value: "txt" }
                               ListElement { text: "docx"; value: "docx" }
+                              ListElement { text: "txt"; value: "txt" }
                               ListElement { text: "md"; value: "md" }
                               ListElement { text: "html"; value: "html" }
                         }
@@ -480,6 +495,36 @@ MuseScore {
                         onCurrentIndexChanged: function () {
                               console.debug("selected "+outputFormatSelection.get(currentIndex).text+" ("+currentIndex+")")
                         }
+                  }
+            }
+
+            Row {
+                  spacing: 8
+                  Label {
+                        id: lettersSuffixLabel
+                        text: qsTr("Letters file suffix")
+                        anchors.verticalCenter: lettersSuffix.verticalCenter
+                  }
+                  TextEdit {
+                        id: lettersSuffix
+                        width: 120
+                        text: "Letters"
+                        selectByMouse: true
+                  }
+            }
+
+            Row {
+                  spacing: 8
+                  Label {
+                        id: numbersSuffixLabel
+                        text: qsTr("Numbers file suffix")
+                        anchors.verticalCenter: numbersSuffix.verticalCenter
+                  }
+                  TextEdit {
+                        id: numbersSuffix
+                        width: 120
+                        text: "Numbers"
+                        selectByMouse: true
                   }
             }
 
@@ -524,7 +569,7 @@ MuseScore {
             text: outputLetters
 
             background: Rectangle {
-                  border.color: "#21be2b"
+                  border.color: "#111111"
             }
       }
 
@@ -542,7 +587,7 @@ MuseScore {
             text: outputNumbers
 
             background: Rectangle {
-                  border.color:"#21be2b"
+                  border.color:"#111111"
             }
       }
 
@@ -622,6 +667,7 @@ MuseScore {
             selectExisting: false
             selectFolder: true
             selectMultiple: false
+            folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
             onAccepted: {
                   var filename = saveFileDialog.fileUrl.toString()
                   var generatedFiles = "Generated files:\n\n"
@@ -668,7 +714,17 @@ MuseScore {
                               instrumentName = instrumentName.replace(" ","_")
                         
                               var o = processStaffVoice(staff,0, format)
-                              var lettersfn = cname + "-" + instrumentName + "_Letters"
+
+                              var suff_l = lettersSuffix.text
+                              if (suff_l.length<1) {
+                                    suff_l = "Letters"
+                              }
+                              var suff_n = numbersSuffix.text
+                              if (suff_n.length<1) {
+                                    suff_n = "Numbers"
+                              }
+
+                              var lettersfn = cname + "-" + instrumentName + "_" + suff_l
                               var lettersfn_e = destFolder+lettersfn+"."+ext
                               outputFile.source = getLocalPath(lettersfn_e)
                               outputFile.write(o.letters)
@@ -679,7 +735,7 @@ MuseScore {
                                     generatedFiles += lettersfn_f+"\n"
                               }
 
-                              var numbersfn = cname + "-" + instrumentName + "_Numbers"
+                              var numbersfn = cname + "-" + instrumentName + "_" + suff_n
                               var numbersfn_e = destFolder+numbersfn+"."+ext
                               outputFile.source = getLocalPath(numbersfn_e)
                               outputFile.write(o.numbers)
