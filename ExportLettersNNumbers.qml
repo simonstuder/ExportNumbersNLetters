@@ -56,7 +56,6 @@ MuseScore {
             return str
       }
 
-
       function oPart(partname) {
             this.name = partname
             this.data = []
@@ -364,7 +363,7 @@ MuseScore {
                         } else if (an.type==42) {
                               console.log("  staff text") // TODO: do the same as system text?
                         } else if (an.type==43) {
-                              console.log(`  system text: ${an.text}`)
+                              console.log("  system text: "+an.text)
                               outputLetters += "\n\n"+an.text+":\n"
                               outputNumbers += "\n\n"+an.text+":\n"
                               pH.newPart(an.text)
@@ -700,11 +699,8 @@ MuseScore {
             return (p.slice(p.lastIndexOf(".")+1))
       }
 
-
       function pandocConversion(inp, outp) {
             if (Qt.platform.os=="linux") {
-                  // pandoc -s -o file.docx file.md --reference-doc=file_t.docx
-                  // +"--from=markdown+all_symbols_escapable "
                   var cmd = "pandoc -s -o "+outp+" "+inp+" --reference-doc="+filePath+"/reference.docx"
                   proc.start(cmd);
                   var val = proc.waitForFinished(-1);
@@ -712,17 +708,14 @@ MuseScore {
                   console.log(val)
                   console.log(proc.readAllStandardOutput())
             } else if (Qt.platform.os=="windows") {
-                  console.error("not implemented")
-                  /*
-                  cmd = "cmd.exe /c 'Mkdir \""+path+"\"'"
+                  var cmd = 'Powershell.exe -Command "pandoc -s -o \"'+outp+'\" \"'+inp+'\" --reference-doc=\"'+filePath+'/reference.docx\""'
                   proc.start(cmd);
                   var val = proc.waitForFinished(-1);
                   console.log(cmd)
                   console.log(val)
                   console.log(proc.readAllStandardOutput())
-                  */
             } else {
-                  console.log("unknown os",Qt.platform.os)
+                  console.log("unknown os ",Qt.platform.os)
             }
       }
 
