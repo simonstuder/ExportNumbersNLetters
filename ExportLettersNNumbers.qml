@@ -1,4 +1,4 @@
-import QtQuick 2.15
+import QtQuick 2.2
 import QtQuick.Dialogs 1.0
 import QtQuick.Controls 2.0
 import MuseScore 3.0
@@ -434,7 +434,6 @@ MuseScore {
 
             Row {
                   id: titleRow
-                  padding: 2
 
                   Label {
                         id: textLabel
@@ -451,7 +450,6 @@ MuseScore {
                   Column {
                         id: textAreaColumn
                         spacing: 8
-                        leftPadding: 4
 
                         TextArea {
                               id: previewTextLetters
