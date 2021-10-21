@@ -16,54 +16,150 @@ MuseScore {
 
       property string outputNumbers
       property string outputLetters
+      property var output
+
+      QProcess {
+            id: proc
+      }
 
       onRun: {
             processPreview()
       
       }
       function showObject(oObject) {
-        //  PURPOSE: Lists all key -> value pairs to the console.
-        //  NOTE: To reduce clutter I am filtering out any 
-        //'undefined' properties. (The MuseScore 'element' object
-        //is very flat - it will show many, many properties for any
-        //given element type; but for any given element many, if not 
-        //most of these properties will return 'undefined' as they 
-        //are not all valid for all element types. If you want to see 
-        //this comment out the filter.)
-        
-        if (Object.keys(oObject).length >0) {
-            Object.keys(oObject)
-                .filter(function(key) {
-                    return oObject[key] != null;
-                })
-                .sort()
-                .forEach(function eachKey(key) {
-                    console.log("---- ---- ", key, " : <", oObject[key], ">");
-                });
-        }
-    }
-
-    function stringRepeat(s,c) {
-          var str = ""
-          for (var i=0; i<c; i++) {
-                str += s
-          }
-          return str
-    }
-
-      function processHelper() {
-            this.parts = []
-            this.newPart = function(partname) {
-                  this.parts.push({
-                        name: partname,
-                        data: []
+            //  PURPOSE: Lists all key -> value pairs to the console.
+            //  NOTE: To reduce clutter I am filtering out any 
+            //'undefined' properties. (The MuseScore 'element' object
+            //is very flat - it will show many, many properties for any
+            //given element type; but for any given element many, if not 
+            //most of these properties will return 'undefined' as they 
+            //are not all valid for all element types. If you want to see 
+            //this comment out the filter.)
+            
+            if (Object.keys(oObject).length >0) {
+                  Object.keys(oObject)
+                  .filter(function(key) {
+                        return oObject[key] != null;
                   })
+                  .sort()
+                  .forEach(function eachKey(key) {
+                        console.log("---- ---- ", key, " : <", oObject[key], ">");
+                  });
+            }
+      }
+
+      function stringRepeat(s,c) {
+            var str = ""
+            for (var i=0; i<c; i++) {
+                  str += s
+            }
+            return str
+      }
+
+
+      function oPart(partname) {
+            this.name = partname
+            this.data = []
+            this.getOutput = function(format) {
+                  var oL = ""
+                  var oN = ""
+                  this.data.sort(function(a,b) {
+                        var dif = a.nind-b.nind
+                        if (dif!=0) {
+                              return dif
+                        } 
+                        if (b.type=="layout_break") {
+                              return 1
+                        }
+                        return -1
+                  })
+                  // normalize consecutive rests
+                  for (var j=0; j<this.data.length-1; j++) {
+                        if (this.data[j].type == "rest" && this.data[j+1].type == "rest") {
+                              this.data[j].duration += this.data[j+1].duration
+                              this.data.splice(j+1,1)
+                        }
+                  }
+                  if (this.data.length>0 && this.data[0].type == "rest") {
+                        this.data.splice(0,1)
+                  }
+                  // TODO: also eliminate spaces at line beginnings in general
+                  if (this.name.length>0) {
+                        console.log("part name > 0 "+this.name)
+                        switch (format) {
+                              case "txt":
+                                    oL += this.name+"\n"
+                                    oN += this.name+"\n"
+                                    break;
+                              case "html":
+                              case "docx":
+                                    oL += "<h2>"+this.name+"</h2>\n"
+                                    oN += "<h2>"+this.name+"</h2>\n"
+                                    break
+                              case "md":
+                                    oL += "## "+this.name+"\n"
+                                    oN += "## "+this.name+"\n"
+                                    break;
+                              default:
+                              console.log("using default part naming")
+                                    break
+                        }
+                  } else {
+                        console.log("part name 0")
+                  }
+                  for (var j=0; j<this.data.length; j++) {
+                        if (this.data[j].type=="note") {
+                              var dist = 0
+                              for (var k=j-1; k>=0; k--) {
+                                    if (this.data[k].type == "note") {
+                                          dist = this.data[j].nind-this.data[k].nind
+                                          break
+                                    }
+                              }
+                              var spaces = Math.floor(dist*scalingSlider.value*3)
+                              //console.log(dist,spaces)
+                              switch(format) {
+                                    case "html":
+                                    case "docx":
+                                          oL += stringRepeat("&nbsp;",spaces)
+                                          oN += stringRepeat("&nbsp;",spaces)
+                                          break
+                                    default:
+                                          oL += stringRepeat(" ",spaces)
+                                          oN += stringRepeat(" ",spaces)
+                              }
+                              var no = this.data[j].getOutput(format)
+                              oL += no.letters
+                              oN += no.numbers
+                        } else if (this.data[j].type=="layout_break") {
+                              if (layoutBreakCheckBox.checked) {
+                                    oL += "\n"
+                                    oN += "\n"
+                              }
+                        } else {
+                              console.log("different type "+this.data[j].type)
+                        }
+                  }
+                  return {
+                        letters: oL,
+                        numbers: oN
+                  }
+            }
+      }
+
+      function processHelper(score, staff) {
+            this.parts = []
+            this.score = score
+            this.staff = staff
+            this.newPart = function(partname) {
+                  var p = new oPart(partname)
+                  console.log("new part")
+                  console.log(p)
+                  this.parts.push(p)
             },
             this.checkPart = function() {
                   if (this.parts.length==0) {
-                        this.parts.push({
-                              data: []
-                        })
+                        this.parts.push(new oPart("")) // TODO: is tihs handled everywhere?
                   }
             }
             this.newNote = function(nind, tpitch, dur, letter, number, dashes) {
@@ -75,7 +171,22 @@ MuseScore {
                         duration: dur,
                         letter: letter,
                         number: number,
-                        dashes: dashes
+                        dashes: dashes,
+                        getOutput: function(format) {
+                              switch(format) {
+                                    case "html-docx_maybe":
+                                          return {
+                                                letters: this.letter + this.dashes + "&nbsp;",
+                                                numbers: this.number + this.dashes + "&nbsp;"
+                                          }
+                                          break
+                                    default:
+                                          return {
+                                                letters: this.letter + this.dashes + " ",
+                                                numbers: this.number + this.dashes + " "
+                                          }
+                              }
+                        }
                   })
             },
             this.newRest = function(nind,dur) {
@@ -90,7 +201,6 @@ MuseScore {
             },
             this.lastLayoutInfoNind = -1,
             this.newLayoutBreak = function(nind) {
-                  return // TODO: handle differently
                   if (nind<=this.lastLayoutInfoNind) {
                         return
                   }
@@ -101,11 +211,42 @@ MuseScore {
                         type: "layout_break"
                   })
             },
-            this.getOutput = function() {
-                  outputLetters = ""
-                  outputNumbers = ""
+
+            this.getOutput = function(format) {
+                  if (format == undefined) {
+                        format = "txt"
+                  }
+                  var oL = ""
+                  var oN = ""
+                  
+                  switch (format) {
+                        case "txt":
+                              oL += this.score.title+" - "+this.staff.part.instruments[0].longName
+                              oN += this.score.title+" - "+this.staff.part.instruments[0].longName
+                              break;
+                        case "html":
+                        case "docx":
+                              oL += "<h1>"+this.score.title+"</h1>\n<h3>"+this.staff.part.instruments[0].longName+"</h3>"
+                              oN += "<h1>"+this.score.title+"</h1>\n<h3>"+this.staff.part.instruments[0].longName+"</h3>"
+                              break
+                        case "md":
+                              oL += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName
+                              oN += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName
+                              break;
+                        default:
+                        console.log("using default score naming")
+                              break
+                  }
+
                   for (var i=0; i<this.parts.length; i++) {
                         var p = this.parts[i]
+                        var o = p.getOutput(format)
+                        oL += "\n\n"
+                        oN += "\n\n"
+                        oL += o.letters
+                        oN += o.numbers
+
+                        /*
                         p.data.sort(function(a,b) {
                               var dif = a.nind-b.nind
                               if (dif!=0) {
@@ -137,8 +278,11 @@ MuseScore {
                         for (var j=0; j<p.data.length; j++) {
                               if (p.data[j].type=="note") {
                                     var dist = 0
-                                    if (j>0) {
-                                          dist = p.data[j].nind-p.data[j-1].nind
+                                    for (var k=j-1; k>=0; k--) {
+                                          if (p.data[k].type == "note") {
+                                                dist = p.data[j].nind-p.data[k].nind
+                                                break
+                                          }
                                     }
                                     var spaces = Math.floor(dist*scalingSlider.value*3)
                                     //console.log(dist,spaces)
@@ -147,33 +291,22 @@ MuseScore {
 
                                     outputLetters += p.data[j].letter + p.data[j].dashes + " "
                                     outputNumbers += p.data[j].number + p.data[j].dashes + " "
+                              } else if (p.data[j].type=="layout_break") {
+                                    if (layoutBreakCheckBox.checked) {
+                                          outputLetters += "\n"
+                                          outputNumbers += "\n"
+                                    }
                               } else {
-                                    //console.log(p.data[j].type)
+                                    console.log("different type "+p.data[j].type)
                               }
-                              /*
-                              switch(p.data[j].type) {
-                                    case "note":
-                                          outputLetters += p.data[j].letter + p.data[j].dashes + " "
-                                          outputNumbers += p.data[j].number + p.data[j].dashes + " "
-                                          break;
-                                    case "layout_break":
-                                          if (layoutBreakCheckBox.checked) {
-                                                outputLetters += "\n"
-                                                outputNumbers += "\n"
-                                          }
-                                          break;
-                                    case "rest": 
-                                          //console.log(`rest of length ${p.data[j].duration*4} at ${p.data[j].nind}`)
-                                          var len = p.data[j].duration*4
-                                          var spaces = Math.floor(Math.max(2,Math.min(8,len*2.3)))
-                                          outputLetters += stringRepeat(" ",spaces)
-                                          outputNumbers += stringRepeat(" ",spaces)
-                                          break;
-                                    default:
-                                          break;
-                              }
-                              */
                         }
+                        */
+                  }
+                  //outputLetters = oL
+                  //outputNumbers = oN
+                  return {
+                        letters: oL,
+                        numbers: oN
                   }
             }
       }
@@ -185,7 +318,11 @@ MuseScore {
             return c.element.staff
       }
 
-      function processStaffVoice(staff,voice) {
+      function processStaffVoice(staff,voice, format) {
+
+            if (format==undefined) {
+                  format = "txt"
+            }
 
             var instrumentPitchOffset = 0
             var sss = getStaffFromInd(staff)
@@ -194,18 +331,17 @@ MuseScore {
             } else if(sss.part.instruments[0].instrumentId.indexOf("brass.sousaphone")==0) {
                   instrumentPitchOffset = 24
             }
-            //console.log("instrumentPitchOffset",instrumentPitchOffset)
 
             var cur = curScore.newCursor()
             cur.staffIdx = staff
             cur.voice = voice 
             cur.rewind(0)
-
-            var pH = new processHelper()
             
             console.log("---------")
             
             var score = cur.score
+
+            var pH = new processHelper(score, sss)
             
             console.log("Score "+score.title+" ("+score.scoreName+") with "+score.nstaves+" staves, "+score.ntracks+" tracks, "+score.nmeasures+" measures")
             console.log("---------")
@@ -228,7 +364,7 @@ MuseScore {
                         } else if (an.type==42) {
                               console.log("  staff text") // TODO: do the same as system text?
                         } else if (an.type==43) {
-                              //console.log(`  system text: ${an.text}`)
+                              console.log(`  system text: ${an.text}`)
                               outputLetters += "\n\n"+an.text+":\n"
                               outputNumbers += "\n\n"+an.text+":\n"
                               pH.newPart(an.text)
@@ -311,8 +447,9 @@ MuseScore {
             }
 
             console.log("collected")
-            pH.getOutput()
-            console.log(outputLetters)
+            var o = pH.getOutput(format)
+            console.log(o.letters)
+            return o
       }
       function getSelectedStaffsOrAllInd() {
             // get selected staffs
@@ -367,7 +504,9 @@ MuseScore {
             }
             console.log("__")
 
-            processStaffVoice(selectedStaffs[0], 0)
+            var o = processStaffVoice(selectedStaffs[0], 0)
+            outputLetters = o.letters
+            outputNumbers = o.numbers
 
       }
 
@@ -416,6 +555,33 @@ MuseScore {
                   }
             }
 
+            Row {
+                  spacing: 2
+
+                  Label {
+                        id: outputFormatLabel
+                        text: qsTr("Output Format")
+                        anchors.verticalCenter: outputFormalSelectionBox.verticalCenter
+                  }
+                  ComboBox {
+                        id: outputFormalSelectionBox
+                        textRole: "text"
+                        //currentIndex: 0
+                        model: ListModel {
+                              id: outputFormatSelection
+                              ListElement { text: "txt"; value: "txt" }
+                              ListElement { text: "docx"; value: "docx" }
+                              ListElement { text: "md"; value: "md" }
+                              ListElement { text: "html"; value: "html" }
+                        }
+                        width: 90
+                        onCurrentIndexChanged: function () {
+                              //processPreview()
+                              console.debug("selected "+outputFormatSelection.get(currentIndex).text+" ("+currentIndex+")")
+                        }
+                  }
+            }
+
             CheckBox {
                   id: layoutBreakCheckBox
                   checked: false
@@ -458,7 +624,8 @@ MuseScore {
             text: outputLetters
 
             background: Rectangle {
-                  border.color: control.enabled ? "#21be2b" : "transparent"
+                  //border.color: control.enabled ? "#21be2b" : "transparent"
+                  border.color: "#21be2b"
             }
       }
 
@@ -476,7 +643,8 @@ MuseScore {
             text: outputNumbers
 
             background: Rectangle {
-                  border.color: control.enabled ? "#21be2b" : "transparent"
+                  //border.color: control.enabled ? "#21be2b" : "transparent"
+                  border.color:"#21be2b"
             }
       }
 
@@ -532,6 +700,32 @@ MuseScore {
             return (p.slice(p.lastIndexOf(".")+1))
       }
 
+
+      function pandocConversion(inp, outp) {
+            if (Qt.platform.os=="linux") {
+                  // pandoc -s -o file.docx file.md --reference-doc=file_t.docx
+                  // +"--from=markdown+all_symbols_escapable "
+                  var cmd = "pandoc -s -o "+outp+" "+inp+" --reference-doc="+filePath+"/reference.docx"
+                  proc.start(cmd);
+                  var val = proc.waitForFinished(-1);
+                  console.log(cmd)
+                  console.log(val)
+                  console.log(proc.readAllStandardOutput())
+            } else if (Qt.platform.os=="windows") {
+                  console.error("not implemented")
+                  /*
+                  cmd = "cmd.exe /c 'Mkdir \""+path+"\"'"
+                  proc.start(cmd);
+                  var val = proc.waitForFinished(-1);
+                  console.log(cmd)
+                  console.log(val)
+                  console.log(proc.readAllStandardOutput())
+                  */
+            } else {
+                  console.log("unknown os",Qt.platform.os)
+            }
+      }
+
       FileDialog {
             id: saveFileDialog
             title: qsTr("Output destination")
@@ -541,53 +735,76 @@ MuseScore {
             onAccepted: {
                   var filename = saveFileDialog.fileUrl.toString()
                   var generatedFiles = "Generated files:\n\n"
-                  //console.log("accepted "+filename)
+                  
                   if(filename){
 
                         filename = getLocalPath(filename)
                         var destFolder = dirname(filename+"/")
-                        //console.log("Saving to folder "+filename)
 
                         var score = curScore
                         var origPath = score.path
                         var cdir = dirname(origPath)
                         var cname = basename(origPath)
                         cname = cname.slice(0, cname.lastIndexOf('.'))
-                        //console.log("cname "+cname)
+
+                        // TODO: automate
+                        var format = outputFormatSelection.get(outputFormatSelection.currentIndex).value
+                        console.log("requesting format "+format+" "+outputFormatSelection.currentIndex+" "+outputFormatSelection.currentText)
+                        format = "docx"
+                        var ext = "md"
+                        switch(format) {
+                              case "md":
+                                    ext = "md"
+                                    break
+                              case "html":
+                              case "docx":
+                                    ext = "html"
+                                    break;
+                              case "txt":
+                                    ext = "txt"
+                                    break;
+                              default:
+
+                        }
 
                         var selectedStaffs = getSelectedStaffsOrAllInd()
                         for (var i=0; i<selectedStaffs.length; i++) {
                               var staff = selectedStaffs[i]
                               console.log("processing staff "+staff)
                               var sss = getStaffFromInd(staff)
-                              //console.log(sss.part, sss.part.instruments.length)
-                              //showObject(sss.part)
-                              //showObject(sss.part.instruments[0])
                               if (!sss.part.hasPitchedStaff) {
                                   continue
                               }
 
-                              // instrumentId (brass.trumpet.bflat)
-                              // longName (Trompete 1)
-                              // shortName (T1)
                               var instrumentName = sss.part.instruments[0].longName
                               instrumentName = instrumentName.replace(" ","_")
-                              //console.log(instrumentName)
-
-                              processStaffVoice(staff,0)
+                        
+                              var o = processStaffVoice(staff,0, format)
                               var lettersfn = cname + "-" + instrumentName + "_Letters"
-                              lettersfn = destFolder+lettersfn+".txt"
-                              outputFile.source = getLocalPath(lettersfn)
-                              outputFile.write(outputLetters)
-                              generatedFiles += lettersfn+"\n"
+                              var lettersfn_e = destFolder+lettersfn+"."+ext
+                              outputFile.source = getLocalPath(lettersfn_e)
+                              outputFile.write(o.letters)
+                              generatedFiles += lettersfn_e+"\n"
+                              if (format=="docx"){
+                                    var lettersfn_f = destFolder+lettersfn+"."+format
+                                    pandocConversion(getLocalPath(lettersfn_e),getLocalPath(lettersfn_f))
+                                    generatedFiles += lettersfn_f+"\n"
+                              }
 
                               var numbersfn = cname + "-" + instrumentName + "_Numbers"
-                              numbersfn = destFolder+numbersfn+".txt"
-                              outputFile.source = getLocalPath(numbersfn)
-                              outputFile.write(outputNumbers)
-                              generatedFiles += numbersfn+"\n"
+                              var numbersfn_e = destFolder+numbersfn+"."+ext
+                              outputFile.source = getLocalPath(numbersfn_e)
+                              outputFile.write(o.numbers)
+                              generatedFiles += numbersfn_e+"\n"
+                              if (format=="docx"){
+                                    var numbersfn_f = destFolder+numbersfn+"."+format
+                                    pandocConversion(getLocalPath(numbersfn_e),getLocalPath(numbersfn_f))
+                                    generatedFiles += numbersfn_f+"\n"
+                              }
             
                         }
+
+                        // pandoc -s -o file.docx file.md --reference-doc=file_t.docx
 
                         outputFile.source = getLocalPath(filename)
                         outputFile.write(generatedFiles)
