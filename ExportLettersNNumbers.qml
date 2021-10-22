@@ -434,237 +434,269 @@ MuseScore {
             width: parent.width
             height: parent.height
 
-            Control {
-                  id: titleRow
-
-                  anchors.top: parent.top
-                  anchors.left: parent.left
-                  anchors.right: parent.right
-                  anchors.topMargin: 2
-                  anchors.leftMargin: 2
-                  anchors.bottomMargin: 2
+            Rectangle {
+                  id: backgroundRect
+                  color: "#EEEEEE"
                   width: parent.width
-
-                  Label {
-                        id: textLabel
-                        wrapMode: Text.WordWrap
-                        text: qsTr("Preview of current settings on the right")
-                        font.pointSize:12
-                  }
-            }
-
-            Control {
-                  id: mainRow
-                  anchors.top: titleRow.bottom
-                  leftPadding: 4
-                  height: childrenRect.height
+                  height: parent.height
 
                   Control {
-                        id: textAreaColumn
-                        leftPadding: 4
+                        id: titleRow
+
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        width: parent.width
                         height: childrenRect.height
 
-                        TextArea {
-                              id: previewTextLetters
-                              height: 250
-                              width: 500
-                              wrapMode: TextEdit.WrapAnywhere
-                              textFormat: TextEdit.PlainText
-                              text: outputLetters
-
-                              background: Rectangle {
-                                    border.color: "#111111"
-                              }
-                        }
-
-                        TextArea {
-                              id: previewTextNumbers
-                              height: 250
-                              width: 500
-                              wrapMode: TextEdit.WrapAnywhere
-                              textFormat: TextEdit.PlainText
-                              text: outputNumbers
-                              anchors.top: previewTextLetters.bottom
-
-                              background: Rectangle {
-                                    border.color:"#111111"
-                              }
+                        Label {
+                              id: textLabel
+                              wrapMode: Text.WordWrap
+                              text: qsTr("Preview of current settings on the right")
+                              font.pointSize: 12
+                              anchors.left: parent.left
+                              anchors.leftMargin: 4
                         }
                   }
+
                   Control {
-                        id: settingsColumn
-                        anchors.left: textAreaColumn.right
+                        id: mainRow
+                        anchors.top: titleRow.bottom
+                        height: childrenRect.height
 
                         Control {
-                              id: sharpOrFlatRow
-                              spacing: 2
-                              width: childrenRect.width
+                              id: textAreaColumn
+                              leftPadding: 4
                               height: childrenRect.height
+                              width: childrenRect.width
+                              anchors.left: parent.left
+                              anchors.leftMargin: 4
 
-                              Label {
-                                    id: sharpOrFlatLabel
-                                    text: qsTr("Use sharps or flats")
-                                    anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
-                              }
-                              ComboBox {
-                                    id: sharpOrFlatSelectionBox
-                                    anchors.left: sharpOrFlatLabel.right
-                                    textRole: "text"
-                                    currentIndex: 0
-                                    model: ListModel {
-                                          id: sharpOrFlatSelection
-                                          ListElement { text: "auto"; value: "auto" }
-                                          ListElement { text: qsTr("sharps"); value: "sharp" }
-                                          ListElement { text: qsTr("flats"); value: "flat" }
+                              TextArea {
+                                    id: previewTextLetters
+                                    height: 250
+                                    width: 500
+                                    wrapMode: TextEdit.WrapAnywhere
+                                    textFormat: TextEdit.PlainText
+                                    text: outputLetters
+
+                                    background: Rectangle {
+                                          border.color: "#111111"
                                     }
-                                    width: 90
-                                    onCurrentIndexChanged: function () {
-                                          processPreview()
+                              }
+
+                              TextArea {
+                                    id: previewTextNumbers
+                                    height: 250
+                                    width: 500
+                                    wrapMode: TextEdit.WrapAnywhere
+                                    textFormat: TextEdit.PlainText
+                                    text: outputNumbers
+                                    anchors.top: previewTextLetters.bottom
+                                    anchors.topMargin: 4
+
+                                    background: Rectangle {
+                                          border.color:"#111111"
                                     }
                               }
                         }
-
                         Control {
-                              id: outputFormatRow
-                              anchors.top: sharpOrFlatRow.bottom
-                              width: childrenRect.width
-                              height: childrenRect.height
+                              id: settingsColumn
+                              anchors.left: textAreaColumn.right
 
-                              Label {
-                                    id: outputFormatLabel
-                                    text: qsTr("Output Format")
-                                    anchors.verticalCenter: outputFormatSelectionBox.verticalCenter
-                              }
-                              ComboBox {
-                                    id: outputFormatSelectionBox
-                                    anchors.left: outputFormatLabel.right
-                                    textRole: "text"
-                                    model: ListModel {
-                                          id: outputFormatSelection
-                                          ListElement { text: "docx"; value: "docx" }
-                                          ListElement { text: "txt"; value: "txt" }
-                                          ListElement { text: "md"; value: "md" }
-                                          ListElement { text: "html"; value: "html" }
-                                    }
-                                    width: 90
-                                    onCurrentIndexChanged: function () {
-                                          console.debug("selected "+outputFormatSelection.get(currentIndex).text+" ("+currentIndex+")")
-                                    }
-                              }
-                        }
-
-                        Control {
-                              id: lettersSuffixRow
-                              anchors.top: outputFormatRow.bottom
-                              width: childrenRect.width
-                              height: childrenRect.height
-
-                              Label {
-                                    id: lettersSuffixLabel
-                                    text: qsTr("Letters file suffix")
-                                    anchors.verticalCenter: lettersSuffixRect.verticalCenter
-                              }
-                              Rectangle {
-                                    id: lettersSuffixRect
-                                    anchors.left: lettersSuffixLabel.right
-                                    color: "white"
+                              Control {
+                                    id: sharpOrFlatRow
                                     width: childrenRect.width
                                     height: childrenRect.height
 
-                                    TextEdit {
-                                          id: lettersSuffix
-                                          width: 120
-                                          text: "Letters"
-                                          selectByMouse: true
+                                    Label {
+                                          id: sharpOrFlatLabel
+                                          text: qsTr("Use sharps or flats")
+                                          anchors.verticalCenter: sharpOrFlatSelectionBox.verticalCenter
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                    }
+                                    ComboBox {
+                                          id: sharpOrFlatSelectionBox
+                                          anchors.left: sharpOrFlatLabel.right
+                                          anchors.leftMargin: 8
+                                          textRole: "text"
+                                          currentIndex: 0
+                                          model: ListModel {
+                                                id: sharpOrFlatSelection
+                                                ListElement { text: "auto"; value: "auto" }
+                                                ListElement { text: qsTr("sharps"); value: "sharp" }
+                                                ListElement { text: qsTr("flats"); value: "flat" }
+                                          }
+                                          width: 90
+                                          onCurrentIndexChanged: function () {
+                                                processPreview()
+                                          }
                                     }
                               }
-                        }
 
-                        Control {
-                              id: numbersSuffixRow
-                              anchors.top: lettersSuffixRow.bottom
-                              width: childrenRect.width
-                              height: childrenRect.height
-
-                              Label {
-                                    id: numbersSuffixLabel
-                                    text: qsTr("Numbers file suffix")
-                                    anchors.verticalCenter: numbersSuffixRect.verticalCenter
-                              }
-                              Rectangle {
-                                    id: numbersSuffixRect
-                                    anchors.left: numbersSuffixLabel.right
-                                    color: "white"
+                              Control {
+                                    id: outputFormatRow
+                                    anchors.top: sharpOrFlatRow.bottom
+                                    anchors.topMargin: 8
                                     width: childrenRect.width
                                     height: childrenRect.height
 
-                                    TextEdit {
-                                          id: numbersSuffix
-                                          width: 120
-                                          text: "Numbers"
-                                          selectByMouse: true
+                                    Label {
+                                          id: outputFormatLabel
+                                          text: qsTr("Output Format")
+                                          anchors.verticalCenter: outputFormatSelectionBox.verticalCenter
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                    }
+                                    ComboBox {
+                                          id: outputFormatSelectionBox
+                                          anchors.left: outputFormatLabel.right
+                                          anchors.leftMargin: 8
+                                          textRole: "text"
+                                          model: ListModel {
+                                                id: outputFormatSelection
+                                                ListElement { text: "docx"; value: "docx" }
+                                                ListElement { text: "txt"; value: "txt" }
+                                                ListElement { text: "md"; value: "md" }
+                                                ListElement { text: "html"; value: "html" }
+                                          }
+                                          width: 90
+                                          onCurrentIndexChanged: function () {
+                                                console.debug("selected "+outputFormatSelection.get(currentIndex).text+" ("+currentIndex+")")
+                                          }
                                     }
                               }
-                        }
 
-                        CheckBox {
-                              id: layoutBreakCheckBox
-                              anchors.top: numbersSuffixRow.bottom
-                              checked: false
-                              text: qsTr("Layout break creates newline")
-                              onCheckedChanged: function () {
-                                    console.log("check changed")
-                                    processPreview()
+                              Control {
+                                    id: lettersSuffixRow
+                                    anchors.top: outputFormatRow.bottom
+                                    anchors.topMargin: 8
+                                    width: childrenRect.width
+                                    height: childrenRect.height
+
+                                    Label {
+                                          id: lettersSuffixLabel
+                                          text: qsTr("Letters file suffix")
+                                          anchors.verticalCenter: lettersSuffixRect.verticalCenter
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                    }
+                                    Rectangle {
+                                          id: lettersSuffixRect
+                                          anchors.left: lettersSuffixLabel.right
+                                          anchors.leftMargin: 8
+                                          color: "white"
+                                          width: childrenRect.width
+                                          height: childrenRect.height
+
+                                          TextEdit {
+                                                id: lettersSuffix
+                                                width: 120
+                                                text: "Letters"
+                                                selectByMouse: true
+                                          }
+                                    }
                               }
-                        }
 
-                        Control {
-                              anchors.top: layoutBreakCheckBox.bottom
-                              width: childrenRect.width
-                              height: childrenRect.height
+                              Control {
+                                    id: numbersSuffixRow
+                                    anchors.top: lettersSuffixRow.bottom
+                                    anchors.topMargin: 8
+                                    width: childrenRect.width
+                                    height: childrenRect.height
 
-                              Label {
-                                    id: scalingLabel
-                                    text: qsTr("Spacing")
-                                    anchors.verticalCenter: scalingSlider.verticalCenter
+                                    Label {
+                                          id: numbersSuffixLabel
+                                          text: qsTr("Numbers file suffix")
+                                          anchors.verticalCenter: numbersSuffixRect.verticalCenter
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                    }
+                                    Rectangle {
+                                          id: numbersSuffixRect
+                                          anchors.left: numbersSuffixLabel.right
+                                          anchors.leftMargin: 8
+                                          color: "white"
+                                          width: childrenRect.width
+                                          height: childrenRect.height
+
+                                          TextEdit {
+                                                id: numbersSuffix
+                                                width: 120
+                                                text: "Numbers"
+                                                selectByMouse: true
+                                          }
+                                    }
                               }
 
-                              Slider {
-                                    id: scalingSlider
-                                    anchors.left: scalingLabel.right
-                                    from: 0
-                                    to: 1
-                                    onMoved: function() {
+                              CheckBox {
+                                    id: layoutBreakCheckBox
+                                    anchors.top: numbersSuffixRow.bottom
+                                    anchors.topMargin: 8
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 4
+                                    checked: false
+                                    text: qsTr("Layout break creates newline")
+                                    onCheckedChanged: function () {
+                                          console.log("check changed")
                                           processPreview()
+                                    }
+                              }
+
+                              Control {
+                                    anchors.top: layoutBreakCheckBox.bottom
+                                    anchors.topMargin: 8
+                                    width: childrenRect.width
+                                    height: childrenRect.height
+
+                                    Label {
+                                          id: scalingLabel
+                                          text: qsTr("Spacing")
+                                          anchors.verticalCenter: scalingSlider.verticalCenter
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                    }
+
+                                    Slider {
+                                          id: scalingSlider
+                                          anchors.left: scalingLabel.right
+                                          anchors.leftMargin: 8
+                                          from: 0
+                                          to: 1
+                                          onMoved: function() {
+                                                processPreview()
+                                          }
                                     }
                               }
                         }
                   }
-            }
 
-            Control {
-                  id: buttonRow
-                  anchors.top: mainRow.bottom
-                  anchors.bottom: parent.bottom
-                  width: parent.width
-                  height: childrenRect.height
+                  Control {
+                        id: buttonRow
+                        anchors.top: mainRow.bottom
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: childrenRect.height
 
-                  Button {
-                        id : buttonSaveOutput
-                        anchors.right: buttonCancel.left
-                        text: qsTr("Save Output")
-                        onClicked: {
-                              console.log("save output")
-                              saveFileDialog.open()
+                        Button {
+                              id : buttonSaveOutput
+                              anchors.right: buttonCancel.left
+                              anchors.rightMargin: 4
+                              text: qsTr("Save Output")
+                              onClicked: {
+                                    console.log("save output")
+                                    saveFileDialog.open()
+                              }
                         }
-                  }
 
-                  Button {
-                        id : buttonCancel
-                        anchors.right: buttonRow.right
-                        text: qsTr("Cancel")
-                        onClicked: {
-                              Qt.quit();
+                        Button {
+                              id : buttonCancel
+                              anchors.right: buttonRow.right
+                              anchors.rightMargin: 4
+                              text: qsTr("Cancel")
+                              onClicked: {
+                                    Qt.quit();
+                              }
                         }
                   }
             }
