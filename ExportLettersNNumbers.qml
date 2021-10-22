@@ -107,6 +107,26 @@ MuseScore {
                   } else {
                   }
 
+                  var minDist = 1000
+                  var maxDist = 0
+                  for (var j=1; j<this.data.length; j++) {
+                        if (this.data[j].type=="note") {
+                              var dist = -1
+                              for (var k=j-1; k>=0; k--) {
+                                    if (this.data[k].type == "note") {
+                                          dist = this.data[j].nind-this.data[k].nind
+                                          break
+                                    }
+                              }
+                              if (dist>0) {
+                                    minDist = Math.min(minDist, dist)
+                                    maxDist = Math.max(maxDist, dist)
+                              }
+                        }
+                  }
+                  var minDist_l = Math.log(minDist)
+                  var maxDist_l = Math.log(maxDist)
+
                   var rowInd = 0
                   for (var j=0; j<this.data.length; j++) {
                         if (this.data[j].type=="note") {
@@ -118,7 +138,13 @@ MuseScore {
                                                 break
                                           }
                                     }
-                                    var spaces = Math.floor(dist*scalingSlider.value*3)
+                                    var spaces = 0
+                                    if (!spacingMethod.checked) {
+                                          var spaces = Math.floor(dist*scalingSlider.value*3)
+                                    } else {
+                                          var dist_l = Math.log(dist)
+                                          spaces = Math.floor((dist_l-minDist_l)/(maxDist_l-minDist_l)*scalingSlider.value*12)
+                                    }
                                     var spaceVal = " "
                                     switch(format) {
                                           case "html":
@@ -378,7 +404,7 @@ MuseScore {
             }
 
             var o = pH.getOutput(format)
-            console.log(o.letters)
+            //console.log(o.letters)
             return o
       }
       function getSelectedStaffsOrAllInd() {
@@ -645,8 +671,21 @@ MuseScore {
                                     }
                               }
 
-                              Control {
+                              CheckBox {
+                                    id: spacingMethod
                                     anchors.top: layoutBreakCheckBox.bottom
+                                    anchors.topMargin: 8
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 4
+                                    checked: true
+                                    text: qsTr("Use logarithmic spacing method")
+                                    onCheckedChanged: function () {
+                                          processPreview()
+                                    }
+                              }
+
+                              Control {
+                                    anchors.top: spacingMethod.bottom
                                     anchors.topMargin: 8
                                     width: childrenRect.width
                                     height: childrenRect.height
