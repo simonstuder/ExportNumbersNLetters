@@ -140,8 +140,8 @@ MuseScore {
                                     switch(format)  {
                                           case "html":
                                           case "docx":
-                                                oL += "<br></br>"
-                                                oN += "<br></br>"
+                                                oL += "<br />"
+                                                oN += "<br />"
                                                 break
                                           default:
                                                 oL += "\n"
@@ -238,8 +238,10 @@ MuseScore {
                               break;
                         case "html":
                         case "docx":
-                              oL += "<h1>"+this.score.title+"</h1>\n<h3>"+this.staff.part.instruments[0].longName+"</h3>"
-                              oN += "<h1>"+this.score.title+"</h1>\n<h3>"+this.staff.part.instruments[0].longName+"</h3>"
+                              oL += "<h1 style='text-align: center;'>"+this.score.title+"</h1>\n<h3 style='text-align: right;'>"+this.staff.part.instruments[0].longName+"</h3>"
+                              oN += "<h1 style='text-align: center;'>"+this.score.title+"</h1>\n<h3 style='text-align: right;'>"+this.staff.part.instruments[0].longName+"</h3>"
+                              oL += "<style>* {margin: 0px; padding: 0px} html { background-color: #DDDDDD; } body {max-width: 21cm; padding: 2cm; margin: auto; background-color: white; font-family: Arial, Helvetica, sans-serif; } h2 { margin-top: 0.6cm } </style>"
+                              oN += "<style>* {margin: 0px; padding: 0px} html { background-color: #DDDDDD; } body {max-width: 21cm; padding: 2cm; margin: auto; background-color: white; font-family: Arial, Helvetica, sans-serif; } h2 { margin-top: 0.6cm } </style>"
                               break
                         case "md":
                               oL += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName
