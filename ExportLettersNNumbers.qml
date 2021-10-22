@@ -592,7 +592,7 @@ MuseScore {
                                           TextEdit {
                                                 id: lettersSuffix
                                                 width: 120
-                                                text: "Letters"
+                                                text: qsTr("Letters")
                                                 selectByMouse: true
                                           }
                                     }
@@ -623,7 +623,7 @@ MuseScore {
                                           TextEdit {
                                                 id: numbersSuffix
                                                 width: 120
-                                                text: "Numbers"
+                                                text: qsTr("Numbers")
                                                 selectByMouse: true
                                           }
                                     }
@@ -801,11 +801,11 @@ MuseScore {
 
                               var suff_l = lettersSuffix.text
                               if (suff_l.length<1) {
-                                    suff_l = "Letters"
+                                    suff_l = qsTr("Letters")
                               }
                               var suff_n = numbersSuffix.text
                               if (suff_n.length<1) {
-                                    suff_n = "Numbers"
+                                    suff_n = qsTr("Numbers")
                               }
 
                               var lettersfn = cname + "-" + instrumentName + "_" + suff_l
