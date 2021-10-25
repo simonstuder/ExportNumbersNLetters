@@ -5,7 +5,7 @@ import MuseScore 3.0
 import FileIO 3.0
 
 MuseScore {
-      menuPath: "Plugins.ExportNumbersNFigures"
+      menuPath: "Plugins.ExportNumbersNLetters"
       description: "Description goes here"
       version: "1.0"
       requiresScore: true
