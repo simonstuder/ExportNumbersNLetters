@@ -708,6 +708,14 @@ MuseScore {
                                                 processPreview()
                                           }
                                     }
+
+                                    Label {
+                                          id: scalingSliderLabel
+                                          text: scalingSlider.value.toFixed(2)
+                                          anchors.verticalCenter: scalingSlider.verticalCenter
+                                          anchors.left: scalingSlider.right
+                                          anchors.leftMargin: 4
+                                    }
                               }
                         }
                   }
