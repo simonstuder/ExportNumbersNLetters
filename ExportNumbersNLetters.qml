@@ -777,7 +777,7 @@ MuseScore {
 
       function pandocConversion(inp, outp) {
             if (Qt.platform.os=="linux") {
-                  var cmd = "pandoc -s -o "+outp+" "+inp+" --reference-doc="+filePath+"/reference.docx"
+                  var cmd = "pandoc -s -o \""+outp+"\" \""+inp+"\" --reference-doc=\""+filePath+"/reference.docx\""
                   proc.start(cmd);
                   var val = proc.waitForFinished(-1);
                   console.log(cmd)
