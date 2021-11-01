@@ -784,7 +784,7 @@ MuseScore {
                   console.log(val)
                   console.log(proc.readAllStandardOutput())
             } else if (Qt.platform.os=="windows") {
-                  var cmd = 'Powershell.exe -Command "pandoc -s -o \"'+outp+'\" \"'+inp+'\" --reference-doc=\"'+filePath+'/reference.docx\""'
+                  var cmd = 'Powershell.exe -Command "pandoc -s -o \''+outp+'\' \''+inp+'\' --reference-doc=\''+filePath+'/reference.docx\'"'
                   proc.start(cmd);
                   var val = proc.waitForFinished(-1);
                   console.log(cmd)
