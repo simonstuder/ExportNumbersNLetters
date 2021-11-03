@@ -126,6 +126,9 @@ MuseScore {
                   }
                   var minDist_l = Math.log(minDist)
                   var maxDist_l = Math.log(maxDist)
+                  console.log("Dists of",this.name)
+                  console.log(minDist,minDist_l)
+                  console.log(maxDist,maxDist_l)
 
                   var rowInd = 0
                   for (var j=0; j<this.data.length; j++) {
@@ -143,7 +146,13 @@ MuseScore {
                                           var spaces = Math.floor(dist*scalingSlider.value*3)
                                     } else {
                                           var dist_l = Math.log(dist)
-                                          spaces = Math.floor((dist_l-minDist_l)/(maxDist_l-minDist_l)*scalingSlider.value*12)
+                                          if (maxDist_l-minDist_l==0) {
+                                                spaces = Math.floor(dist)
+                                          } else if (maxDist<=1.5) {
+                                                spaces = Math.floor((dist_l-minDist_l)/(maxDist_l-minDist_l)*scalingSlider.value*maxDist*2)
+                                          } else {
+                                                spaces = Math.floor((dist_l-minDist_l)/(maxDist_l-minDist_l)*scalingSlider.value*12)
+                                          }
                                     }
                                     var spaceVal = " "
                                     switch(format) {
