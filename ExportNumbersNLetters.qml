@@ -773,11 +773,23 @@ MuseScore {
       }
        
       function dirname(p) {
-            return (p.slice(0,p.lastIndexOf("/")+1))
+            if (p.indexOf("/")>=0) {
+                  p = (p.slice(0,p.lastIndexOf("/")+1))
+            }
+            if (p.indexOf("\\")>=0) {
+                  p = (p.slice(0,p.lastIndexOf("\\")+1))
+            }
+            return p
       }
        
       function basename(p) {
-            return (p.slice(p.lastIndexOf("/")+1))
+            if (p.indexOf("/")>=0) {
+                  p = (p.slice(p.lastIndexOf("/")+1))
+            }
+            if (p.indexOf("\\")>=0) {
+                  p = (p.slice(p.lastIndexOf("\\")+1))
+            }
+            return p
       }
 
       function extension(p) {
@@ -823,6 +835,7 @@ MuseScore {
                         var origPath = score.path
                         var cdir = dirname(origPath)
                         var cname = basename(origPath)
+                        console.log("names", origPath, cname)
                         cname = cname.slice(0, cname.lastIndexOf('.'))
 
                         var format = outputFormatSelection.get(outputFormatSelectionBox.currentIndex).value
@@ -873,6 +886,7 @@ MuseScore {
                               generatedFiles += lettersfn_e+"\n"
                               if (format=="docx"){
                                     var lettersfn_f = destFolder+lettersfn+"."+format
+                                    console.log(destFolder, lettersfn, lettersfn_e, lettersfn_f, cname)
                                     pandocConversion(getLocalPath(lettersfn_e),getLocalPath(lettersfn_f))
                                     generatedFiles += lettersfn_f+"\n"
                               }
