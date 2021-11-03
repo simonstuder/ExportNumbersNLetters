@@ -320,8 +320,12 @@ MuseScore {
             var sss = getStaffFromInd(staff)
             if(sss.part.instruments[0].instrumentId.indexOf("brass.trombone")==0) {
                   instrumentPitchOffset = 12
+            } else if(sss.part.instruments[0].instrumentId.indexOf("brass.euphonium")==0) {
+                  instrumentPitchOffset = 12
             } else if(sss.part.instruments[0].instrumentId.indexOf("brass.sousaphone")==0) {
                   instrumentPitchOffset = 24
+            } else {
+                  console.log(sss.part.instruments[0].instrumentId)
             }
 
             var cur = curScore.newCursor()
