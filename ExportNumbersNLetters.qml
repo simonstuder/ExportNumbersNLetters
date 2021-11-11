@@ -126,9 +126,6 @@ MuseScore {
                   }
                   var minDist_l = Math.log(minDist)
                   var maxDist_l = Math.log(maxDist)
-                  console.log("Dists of",this.name)
-                  console.log(minDist,minDist_l)
-                  console.log(maxDist,maxDist_l)
 
                   var rowInd = 0
                   for (var j=0; j<this.data.length; j++) {
@@ -324,6 +321,8 @@ MuseScore {
                   instrumentPitchOffset = 12
             } else if(sss.part.instruments[0].instrumentId.indexOf("brass.sousaphone")==0) {
                   instrumentPitchOffset = 24
+            } else if(sss.part.instruments[0].instrumentId.indexOf("brass.trumpet")==0) {
+                  instrumentPitchOffset = 0
             } else {
                   console.log(sss.part.instruments[0].instrumentId)
             }
@@ -335,8 +334,6 @@ MuseScore {
             
             var score = cur.score
             
-            //console.log("Score "+score.title+" ("+score.scoreName+") with "+score.nstaves+" staves, "+score.ntracks+" tracks, "+score.nmeasures+" measures")
-
             var pH = new processHelper(score, sss)
 
             
@@ -349,10 +346,10 @@ MuseScore {
                         var an = cur.segment.annotations[j]
                         if (an.type==41) { // tempo annotation
                         } else if (an.type==42) {
-                              console.log("  staff text") // TODO: do the same as system text?
+                              console.log("  staff text"+an.text)
+                              pH.newPart(an.text)
                         } else if (an.type==43) {
-                              outputLetters += "\n\n"+an.text+":\n"
-                              outputNumbers += "\n\n"+an.text+":\n"
+                              //console.log("  system text "+an.text)
                               pH.newPart(an.text)
                         } else {
                               console.log("  ======> Annotation with type "+an.type+" "+an.userName())
@@ -417,7 +414,6 @@ MuseScore {
             }
 
             var o = pH.getOutput(format)
-            //console.log(o.letters)
             return o
       }
       function getSelectedStaffsOrAllInd() {
@@ -839,7 +835,6 @@ MuseScore {
                         var origPath = score.path
                         var cdir = dirname(origPath)
                         var cname = basename(origPath)
-                        console.log("names", origPath, cname)
                         cname = cname.slice(0, cname.lastIndexOf('.'))
 
                         var format = outputFormatSelection.get(outputFormatSelectionBox.currentIndex).value
@@ -1071,4 +1066,5 @@ TODO:
 - special ties maybe with more than two notes on same pitch
 - handle other instruments
 - make mapping customizable
+- add abililty to have system text in the middle of notes of some staffs
 */
