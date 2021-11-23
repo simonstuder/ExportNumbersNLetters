@@ -206,7 +206,7 @@ MuseScore {
                         this.parts.push(new oPart("")) // TODO: is tihs handled everywhere?
                   }
             }
-            this.newNote = function(nind, tpitch, dur, letter, number, dashes) {
+            this.newNote = function(nind, tpitch, dur, letter, number, dashesN, dashesL) {
                   this.checkPart()
                   this.parts[this.parts.length-1].data.push({
                         nind: nind,
@@ -215,19 +215,20 @@ MuseScore {
                         duration: dur,
                         letter: letter,
                         number: number,
-                        dashes: dashes,
+                        dashesN: dashesN,
+                        dashesL: dashesL,
                         getOutput: function(format) {
                               switch(format) {
                                     case "html-docx_maybe":
                                           return {
-                                                letters: this.letter + this.dashes + "&nbsp;",
-                                                numbers: this.number + this.dashes + "&nbsp;"
+                                                letters: this.letter + this.dashesL + "&nbsp;",
+                                                numbers: this.number + this.dashesN + "&nbsp;"
                                           }
                                           break
                                     default:
                                           return {
-                                                letters: this.letter + this.dashes + " ",
-                                                numbers: this.number + this.dashes + " "
+                                                letters: this.letter + this.dashesL + " ",
+                                                numbers: this.number + this.dashesN + " "
                                           }
                               }
                         }
@@ -371,7 +372,7 @@ MuseScore {
                               var tpitch = pitch + (n.tpc2-n.tpc1)
                               if (n.tieBack!==null && n.tieBack.startNote.pitch==n.pitch) {
                               } else {
-                                    pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch), dashes(tpitch))
+                                    pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch), dashesN(tpitch), dashesL(tpitch))
                               }
                         } else if (cur.element.type==Element.REST) {
                               var duration = cur.element.actualDuration
@@ -1042,18 +1043,28 @@ MuseScore {
             }
       }
       
-      function dashes(pitch) {
+      function dashesN(pitch) {
             if (72 <= pitch && pitch <= 75) {
                   return "'"
             } else if (76 <= pitch && pitch <= 78) {
                   return "''"
-             } else if (79 <= pitch && pitch <= 83) {
-                  return "'''"
-             }  else if (84 <= pitch) {
-                  return "''''"
-             } else {
+            } else if (79 <= pitch && pitch <= 83) {
+            return "'''"
+            }  else if (84 <= pitch) {
+            return "''''"
+            } else {
+            return ""
+            }
+      }
+      
+      function dashesL(pitch) {
+            if (72 <= pitch && pitch <= 83) {
+                  return "'"
+            } else if (84 <= pitch) {
+                  return "''"
+            } else {
                   return ""
-             }
+            }
       }
             
 }
