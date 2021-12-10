@@ -224,6 +224,13 @@ MuseScore {
                                                 numbers: this.number + this.dashes + "&nbsp;"
                                           }
                                           break
+                                    case "html":
+                                    case "docx":
+                                          return {
+                                                letters: "<u>" + this.letter + this.dashes + "</u>" + "&nbsp;",
+                                                numbers: "<u>" + this.number + this.dashes + "</u>" + "&nbsp;"
+                                          }
+                                          break
                                     default:
                                           return {
                                                 letters: this.letter + this.dashes + " ",
@@ -1054,6 +1061,43 @@ MuseScore {
              } else {
                   return ""
              }
+      }
+      
+      function textdeco(pitch, format) {
+            switch(format) {
+                  case "html":
+                  case "docx":
+                        if (72 <= pitch && pitch <= 75) {
+                              return ["","'"]
+                        } else if (76 <= pitch && pitch <= 78) {
+                              return ["","''"]
+                        } else if (76 <= pitch && pitch <= 78) {
+                              return ["",""]
+                        } else if (72 <= pitch && pitch <= 75) {
+                              return ["","''"]
+                        } else if (76 <= pitch && pitch <= 78) {
+                              return ["","''"]
+                        } else if (79 <= pitch && pitch <= 83) {
+                              return ["","'''"]
+                        }  else if (84 <= pitch) {
+                              return ["","''''"]
+                        } else {
+                              return ["",""]
+                        }
+                        break
+                  default:
+                        if (72 <= pitch && pitch <= 75) {
+                              return ["","'"]
+                        } else if (76 <= pitch && pitch <= 78) {
+                              return ["","''"]
+                        } else if (79 <= pitch && pitch <= 83) {
+                              return ["","'''"]
+                        }  else if (84 <= pitch) {
+                              return ["","''''"]
+                        } else {
+                              return ["",""]
+                        }
+            }
       }
             
 }
