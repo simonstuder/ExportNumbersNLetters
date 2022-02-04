@@ -216,8 +216,8 @@ MuseScore {
                         letter: letter,
                         number: number,
                         getOutput: function(format) {
-                              let tDL = textdeco(this.pitch, format, true)
-                              let tDN = textdeco(this.pitch, format, false)
+                              var tDL = textdeco(this.pitch, format, true)
+                              var tDN = textdeco(this.pitch, format, false)
                               switch(format) {
                                     case "html-docx_maybe":
                                           return {
