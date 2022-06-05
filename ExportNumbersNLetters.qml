@@ -952,7 +952,7 @@ MuseScore {
                   case 78: return "2"
                   case 79: return "L"
                   case 80: return "2/3"
-                  case 81: return "½'"
+                  case 81: return "½"
                   case 82: return "1"
                   case 83: return "2"
                   case 84: return "L"
