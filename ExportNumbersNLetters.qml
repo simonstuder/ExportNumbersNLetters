@@ -1027,7 +1027,7 @@ MuseScore {
                         console.log("updated numbers mapping")
                         processPreview()
                   }
-            };
+            }
             xhr.send()
 
             var xhr1 = new XMLHttpRequest
@@ -1038,7 +1038,7 @@ MuseScore {
                         console.log("updated letters mapping")
                         processPreview()
                   }
-            };
+            }
             xhr1.send()
       }
 
