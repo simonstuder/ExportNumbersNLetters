@@ -17,14 +17,18 @@ MuseScore {
       property string outputNumbers
       property string outputLetters
       property var output
+      property string letterMappingFilePath : "mappings/letters_mapping_default.json"
+      property var lettersMapping
+      property string numberMappingFilePath : "mappings/numbers_mapping_default.json"
+      property var numbersMapping
 
       QProcess {
             id: proc
       }
 
       onRun: {
+            processMappings()
             processPreview()
-      
       }
       function showObject(oObject) {
             //  PURPOSE: Lists all key -> value pairs to the console.
@@ -206,36 +210,33 @@ MuseScore {
                         this.parts.push(new oPart("")) // TODO: is tihs handled everywhere?
                   }
             }
-            this.newNote = function(nind, tpitch, dur, letter, number) {
+            this.newNote = function(nind, tpitch, dur, sharps) {
                   this.checkPart()
                   this.parts[this.parts.length-1].data.push({
                         nind: nind,
                         type: "note",
                         pitch: tpitch,
                         duration: dur,
-                        letter: letter,
-                        number: number,
+                        sharps: sharps,
                         getOutput: function(format) {
-                              var tDL = textdeco(this.pitch, format, true)
-                              var tDN = textdeco(this.pitch, format, false)
                               switch(format) {
                                     case "html-docx_maybe":
                                           return {
-                                                letters: tDL[0] + this.letter + tDL[1] + "&nbsp;",
-                                                numbers: tDN[0] + this.number + this.tDN[1] + "&nbsp;"
+                                                letters: (sharps?lettersMapping[this.pitch].sharp.txt:lettersMapping[this.pitch].flat.txt) + "&nbsp;",
+                                                numbers: numbersMapping[this.pitch].txt + "&nbsp;"
                                           }
                                           break
                                     case "html":
                                     case "docx":
                                           return {
-                                                letters: tDL[0] + this.letter + tDL[1] + "&nbsp;",
-                                                numbers: tDN[0] + this.number + tDN[1] + "&nbsp;"
+                                                letters: (sharps?lettersMapping[this.pitch].sharp.html:lettersMapping[this.pitch].flat.html) + "&nbsp;",
+                                                numbers: numbersMapping[this.pitch].html + "&nbsp;"
                                           }
                                           break
                                     default:
                                           return {
-                                                letters: tDL[0] + this.letter + tDL[1] + " ",
-                                                numbers: tDN[0] + this.number + tDN[1] + " "
+                                                letters: (sharps?lettersMapping[this.pitch].sharp.txt:lettersMapping[this.pitch].flat.txt) + " ",
+                                                numbers: numbersMapping[this.pitch].txt + " "
                                           }
                               }
                         }
@@ -379,7 +380,7 @@ MuseScore {
                               var tpitch = pitch + (n.tpc2-n.tpc1)
                               if (n.tieBack!==null && n.tieBack.startNote.pitch==n.pitch) {
                               } else {
-                                    pH.newNote(nind, tpitch, cur.element.actualDuration, letters(tpitch,cur), numbers(tpitch))
+                                    pH.newNote(nind, tpitch, cur.element.actualDuration, useSharps(cur))
                               }
                         } else if (cur.element.type==Element.REST) {
                               var duration = cur.element.actualDuration
@@ -462,6 +463,7 @@ MuseScore {
             return selectedStaffs
       }
       function processPreview() {
+            console.log("processPreview")
             var selectedStaffs = getSelectedStaffsOrAllInd()
             for (var i=0; i<selectedStaffs.length; i++) {
                   var staff = selectedStaffs[i]
@@ -471,7 +473,6 @@ MuseScore {
             var o = processStaffVoice(selectedStaffs[0], 0)
             outputLetters = o.letters
             outputNumbers = o.numbers
-
       }
 
       Control {
@@ -674,9 +675,63 @@ MuseScore {
                                     }
                               }
 
+                              Control {
+                                    id: lettersMappingFileRow
+                                    anchors.top: numbersSuffixRow.bottom
+                                    anchors.topMargin: 8
+                                    width: childrenRect.width
+                                    height: childrenRect.height
+
+                                    Label {
+                                          id: lettersMappingFileLabel
+                                          text: qsTr("Letters map file")
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                          anchors.verticalCenter: buttonLettersMappingFile.verticalCenter
+                                    }
+                                    
+                                    Button {
+                                          id : buttonLettersMappingFile
+                                          anchors.left: lettersMappingFileLabel.right
+                                          anchors.leftMargin: 4
+                                          text: qsTr(letterMappingFilePath.substr(letterMappingFilePath.lastIndexOf("/")+1))
+                                          onClicked: {
+                                                console.log("select mapping file")
+                                                lettersMappingFileDialog.open()
+                                          }
+                                    }
+                              }
+
+                              Control {
+                                    id: numbersMappingFileRow
+                                    anchors.top: lettersMappingFileRow.bottom
+                                    anchors.topMargin: 8
+                                    width: childrenRect.width
+                                    height: childrenRect.height
+
+                                    Label {
+                                          id: numbersMappingFileLabel
+                                          text: qsTr("Numbers map file")
+                                          anchors.left: parent.left
+                                          anchors.leftMargin: 4
+                                          anchors.verticalCenter: buttonNumbersMappingFile.verticalCenter
+                                    }
+                                    
+                                    Button {
+                                          id : buttonNumbersMappingFile
+                                          anchors.left: numbersMappingFileLabel.right
+                                          anchors.leftMargin: 4
+                                          text: qsTr(numberMappingFilePath.substr(numberMappingFilePath.lastIndexOf("/")+1))
+                                          onClicked: {
+                                                console.log("select mapping file")
+                                                numbersMappingFileDialog.open()
+                                          }
+                                    }
+                              }
+
                               CheckBox {
                                     id: layoutBreakCheckBox
-                                    anchors.top: numbersSuffixRow.bottom
+                                    anchors.top: numbersMappingFileRow.bottom
                                     anchors.topMargin: 8
                                     anchors.left: parent.left
                                     anchors.leftMargin: 4
@@ -830,6 +885,7 @@ MuseScore {
             selectExisting: false
             selectFolder: true
             selectMultiple: false
+            folder: shortcuts.home
             onAccepted: {
                   var filename = saveFileDialog.fileUrl.toString()
                   var generatedFiles = "Generated files:\n\n"
@@ -920,6 +976,72 @@ MuseScore {
             }
       }
 
+      FileDialog {
+            id: numbersMappingFileDialog
+            title: qsTr("Numbers Mapping File")
+            selectExisting: true
+            selectFolder: false
+            selectMultiple: false
+            folder: shortcuts.home
+            onAccepted: {
+                  var filename = numbersMappingFileDialog.fileUrl.toString()
+                  
+                  if(filename){
+                        filename = getLocalPath(filename)
+                        console.log("selected "+filename)
+                        numberMappingFilePath = filename
+
+                        processMappings()
+                        
+                        processPreview()
+                  }
+            }
+      }
+
+      FileDialog {
+            id: lettersMappingFileDialog
+            title: qsTr("Letters Mapping File")
+            selectExisting: true
+            selectFolder: false
+            selectMultiple: false
+            folder: shortcuts.home
+            onAccepted: {
+                  var filename = lettersMappingFileDialog.fileUrl.toString()
+                  
+                  if(filename){
+                        filename = getLocalPath(filename)
+                        console.log("selected "+filename)
+                        letterMappingFilePath = filename
+
+                        processMappings()
+                  }
+            }
+      }
+
+      function processMappings() {
+            var xhr = new XMLHttpRequest
+            xhr.open("GET", numberMappingFilePath)
+            xhr.onreadystatechange = function() {
+                  if (xhr.readyState == XMLHttpRequest.DONE) {
+                        numbersMapping = JSON.parse(xhr.responseText)
+                        console.log("updated numbers mapping")
+                        processPreview()
+                  }
+            };
+            xhr.send()
+
+            var xhr1 = new XMLHttpRequest
+            xhr1.open("GET", letterMappingFilePath)
+            xhr1.onreadystatechange = function() {
+                  if (xhr1.readyState == XMLHttpRequest.DONE) {
+                        lettersMapping = JSON.parse(xhr1.responseText)
+                        console.log("updated letters mapping")
+                        processPreview()
+                  }
+            };
+            xhr1.send()
+      }
+
 
             
             
@@ -961,16 +1083,24 @@ MuseScore {
       }
 
       function letters(tpitch, cur) {
+            if (useSharps(cur)) {
+                  return lettersSharp(tpitch)
+            } else {
+                  return lettersFlat(tpitch)
+            }
+      }
+
+      function useSharps(cur) {
             if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="auto") {
                   if (cur.keySignature<0) {
-                        return lettersFlat(tpitch)
+                        return false
                   } else {
-                        return lettersSharp(tpitch)
+                        return true
                   }
             } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="sharp") {
-                  return lettersSharp(tpitch)
+                  return true
             } else if (sharpOrFlatSelection.get(sharpOrFlatSelectionBox.currentIndex).value=="flat") {
-                  return lettersFlat(tpitch)
+                  return false
             }
       }
       
@@ -1131,6 +1261,5 @@ TODO:
 - use concert pitch or make it an option
 - special ties maybe with more than two notes on same pitch
 - handle other instruments
-- make mapping customizable
 - add abililty to have system text in the middle of notes of some staffs
 */
