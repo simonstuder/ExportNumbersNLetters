@@ -17,7 +17,7 @@ MuseScore {
       property string outputNumbers
       property string outputLetters
       property var output
-      property string letterMappingFilePath : "mappings/letters_mapping_default.json"
+      property string letterMappingFilePath : "mappings/letters_mapping_default_de.json"
       property var lettersMapping
       property string numberMappingFilePath : "mappings/numbers_mapping_default.json"
       property var numbersMapping
