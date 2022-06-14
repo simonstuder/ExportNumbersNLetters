@@ -369,7 +369,7 @@ MuseScore {
                   if (cur.element) {
                         if (cur.element.type==Element.CHORD) {
                               /* TODO: handle multiple notes
-                              for (let j=0; j<cur.element.notes.length; j++) {
+                              for (var j=0; j<cur.element.notes.length; j++) {
                                     var n = cur.element.notes[j]
                                     var pitch = n.pitch + instrumentPitchOffset
                                     var tpitch = pitch + (n.tpc2-n.tpc1)
