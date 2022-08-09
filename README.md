@@ -28,3 +28,6 @@ All other output is hardcoded so far.
 ## Translations
 The languages this is available in are English and German. For others I would accept help with translation if wanted.
 
+## Todo
+- export to pdf via libreoffice if installed
+
