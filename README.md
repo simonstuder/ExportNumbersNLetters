@@ -1,7 +1,7 @@
 # ExportNumbersNLetters
-Musescore Plugin to export numbers or letters for beginners
+Musescore Plugin to export numbers or letters for beginners and mainly brass instruments. 
 
-I created this plugin to distribute music sheets in form of letters or numbers for my beginner band members.
+I created this plugin to distribute music sheets in form of letters or numbers for my beginner band members with brass instruments. Trumpet, Trombone, Euphonium and Sousaphone are implemented. (Contact me or open an issue if you want others that do not work yet)
 
 Options include:
 
