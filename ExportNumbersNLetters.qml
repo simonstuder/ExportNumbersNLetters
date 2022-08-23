@@ -878,6 +878,25 @@ MuseScore {
                   console.log("unknown os ",Qt.platform.os)
             }
       }
+    function rmfile(path) {
+        if (["linux", "osx"].indexOf(Qt.platform.os)>=0) {
+            var cmd = 'rm "'+path+'"'
+            proc.start(cmd);
+            var val = proc.waitForFinished(-1);
+            console.log(cmd)
+            console.log(val)
+            console.log(proc.readAllStandardOutput())
+        } else if (Qt.platform.os=="windows") {
+            var cmd = "Powershell.exe -Command \"Remove-Item '"+path+"'\""
+            proc.start(cmd);
+            var val = proc.waitForFinished(-1);
+            console.log(cmd)
+            console.log(val)
+            console.log(proc.readAllStandardOutput())
+        } else {
+            console.log("unknown os",Qt.platform.os)
+        }
+    }
 
       FileDialog {
             id: saveFileDialog
@@ -952,6 +971,7 @@ MuseScore {
                                     console.log(destFolder, lettersfn, lettersfn_e, lettersfn_f, cname)
                                     pandocConversion(getLocalPath(lettersfn_e),getLocalPath(lettersfn_f))
                                     generatedFiles += lettersfn_f+"\n"
+                                    rmfile(getLocalPath(lettersfn_e));
                               }
 
                               var numbersfn = cname + "-" + instrumentName + "_" + suff_n
@@ -963,6 +983,7 @@ MuseScore {
                                     var numbersfn_f = destFolder+numbersfn+"."+format
                                     pandocConversion(getLocalPath(numbersfn_e),getLocalPath(numbersfn_f))
                                     generatedFiles += numbersfn_f+"\n"
+                                    rmfile(getLocalPath(numbersfn_e));
                               }
             
                         }
