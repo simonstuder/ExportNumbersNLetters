@@ -97,7 +97,7 @@ MuseScore {
                     case "txt":
                         oL += this.name+"\n"
                         oN += this.name+"\n"
-                        break;
+                        break
                     case "html":
                     case "docx":
                     case "pdf":
@@ -107,9 +107,9 @@ MuseScore {
                     case "md":
                         oL += "## "+this.name+"\n"
                         oN += "## "+this.name+"\n"
-                        break;
+                        break
                     default:
-                    console.log("using default part naming")
+                        console.log("using default part naming")
                         break
                 }
             } else {
@@ -196,6 +196,17 @@ MuseScore {
                 }
                 rowInd++
             }
+            switch(format)  {
+                case "html":
+                case "docx":
+                case "pdf":
+                    break
+                default:
+                    if (this.data.length>0) {
+                        oL += "\n"
+                        oN += "\n"
+                    }
+            }
             return {
                 letters: oL,
                 numbers: oN
@@ -281,8 +292,8 @@ MuseScore {
             
             switch (format) {
                 case "txt":
-                    oL += this.score.title+" - "+this.staff.part.instruments[0].longName
-                    oN += this.score.title+" - "+this.staff.part.instruments[0].longName
+                    oL += this.score.title+" - "+this.staff.part.instruments[0].longName + "\n"
+                    oN += this.score.title+" - "+this.staff.part.instruments[0].longName + "\n"
                     break;
                 case "html":
                 case "docx":
@@ -293,21 +304,37 @@ MuseScore {
                     oN += "<style>* {margin: 0px; padding: 0px} html { background-color: #DDDDDD; } body {max-width: 21cm; padding: 2cm; margin: auto; background-color: white; font-family: Arial, Helvetica, sans-serif; } h2 { margin-top: 0.6cm } </style>"
                     break
                 case "md":
-                    oL += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName
-                    oN += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName
+                    oL += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName+"\n"
+                    oN += "# "+this.score.title+"\n### "+this.staff.part.instruments[0].longName+"\n"
                     break;
                 default:
-                console.log("using default score naming")
+                    console.log("using default score naming")
                     break
             }
 
             for (var i=0; i<this.parts.length; i++) {
                 var p = this.parts[i]
                 var o = p.getOutput(format)
-                oL += "\n\n"
-                oN += "\n\n"
+                console.log("part "+p.name+" length "+p.data.length)
                 oL += o.letters
                 oN += o.numbers
+                switch (format) {
+                    case "txt":
+                    case "md":
+                        oL += "\n"
+                        oN += "\n"
+                        break;
+                    case "html":
+                    case "docx":
+                    case "pdf":
+                        //if (p.data.length>0) {
+                            oL += "<br />\n"
+                            oN += "<br />\n"
+                        //}
+                        break;
+                    default:
+                        break
+                }
             }
 
             return {
