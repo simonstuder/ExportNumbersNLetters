@@ -33,4 +33,5 @@ The languages this is available in are English and German. For others I would ac
 - do not only use layout breaks at end of measures for newlines but other indicators, even individually per instrument
 - fix separation of parts if the name of a new part is not at the beginning of a measure, even make it individually per instrument
 - make spacing between parts more unified. Maybe check longest lines to adapt to that target or page width
+- check for installed pandoc
 
