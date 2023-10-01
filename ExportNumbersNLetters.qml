@@ -385,19 +385,27 @@ MuseScore {
         while (cur.segment) {
         
             var nind = cur.segment.tick/division
-            
+
+            var textAnno = {"type":"none"}
+
             for (var j=0; j<cur.segment.annotations.length; j++) {
                 var an = cur.segment.annotations[j]
+                console.log("another annotation "+an.type)
                 if (an.type==41) { // tempo annotation
-                } else if (an.type==42) {
-                    console.log("  staff text"+an.text)
-                    pH.newPart(an.text)
+                } else if (an.type==42 && sss.is(an.staff)) {
+                    //console.log("  staff text "+an.text+" "+an.systemFlag+" "+sss.is(an.staff))
+                    textAnno = {"type":"staff","text": an.text}
                 } else if (an.type==43) {
-                    //console.log("  system text "+an.text)
-                    pH.newPart(an.text)
+                    //console.log("  system text "+an.text+" "+an.systemFlag+" "+sss.is(an.staff))
+                    if (textAnno.type=="none") {
+                        textAnno = {"type":"system","text": an.text}
+                    }
                 } else {
                     console.log("  ======> Annotation with type "+an.type+" "+an.userName())
                 }
+            }
+            if (textAnno.type!="none") {
+                pH.newPart(textAnno.text)
             }
 
         
