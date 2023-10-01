@@ -818,7 +818,7 @@ MuseScore {
                             id: scalingSlider
                             anchors.left: scalingLabel.right
                             anchors.leftMargin: 8
-                            value: 0.4
+                            value: 0.6
                             from: 0
                             to: 1
                             onMoved: function() {
