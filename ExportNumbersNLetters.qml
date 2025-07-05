@@ -367,6 +367,8 @@ MuseScore {
             instrumentPitchOffset = 24
         } else if(sss.part.instruments[0].instrumentId.indexOf("brass.trumpet")==0) {
             instrumentPitchOffset = 0
+        } else if(sss.part.instruments[0].instrumentId.indexOf("wind.reed.saxophone")==0) {
+            instrumentPitchOffset = 12
         } else {
             console.log(sss.part.instruments[0].instrumentId)
         }
